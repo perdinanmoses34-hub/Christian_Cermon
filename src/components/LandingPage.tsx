@@ -115,10 +115,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowI
               </div>
             </div>
 
-            {/* Simulated 3 Column Preview */}
+            {/* Simulated Preview: 1 column on mobile, 3 columns on desktop */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4 text-xs">
-              {/* Left Column: Outline */}
-              <div className="md:col-span-3 bg-slate-900/90 rounded-lg p-3 border border-slate-800 space-y-2">
+              {/* Left Column: Outline (desktop only) */}
+              <div className="hidden md:block md:col-span-3 bg-slate-900/90 rounded-lg p-3 border border-slate-800 space-y-2">
                 <p className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Struktur Outline</p>
                 <div className="p-2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 font-medium">
                   ★ Big Idea & Tujuan
@@ -137,9 +137,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowI
                 </div>
               </div>
 
-              {/* Center Column: Sermon Content */}
-              <div className="md:col-span-6 bg-slate-900/50 rounded-lg p-4 border border-slate-800">
-                <div className="bg-amber-500/10 border-l-4 border-amber-500 p-3 rounded-r-md mb-3">
+              {/* Center Column: Sermon Content (shown on all screens) */}
+              <div className="col-span-1 md:col-span-6 bg-slate-900/50 rounded-lg p-3.5 sm:p-4 border border-slate-800">
+                <div className="bg-amber-500/10 border-l-4 border-amber-500 p-2.5 sm:p-3 rounded-r-md mb-3">
                   <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide">Big Idea</span>
                   <p className="text-xs text-amber-100 font-medium mt-0.5">
                     "Iman yang sejati bukan sekadar persetujuan akal, melainkan penyerahan diri seutuhnya yang dibuktikan lewat ketaatan firman di tengah ketidakpastian."
@@ -155,8 +155,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowI
                 </div>
               </div>
 
-              {/* Right Column: AI Assistant */}
-              <div className="md:col-span-3 bg-slate-900/90 rounded-lg p-3 border border-slate-800 space-y-2">
+              {/* Right Column: AI Assistant (desktop only) */}
+              <div className="hidden md:block md:col-span-3 bg-slate-900/90 rounded-lg p-3 border border-slate-800 space-y-2">
                 <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-[11px]">
                   <Sparkles className="w-3.5 h-3.5" />
                   AI Homiletics Assistant

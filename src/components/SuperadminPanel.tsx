@@ -231,22 +231,14 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-8 animate-fadeIn pb-safe md:pb-8">
-      {/* Top Banner / Android App Bar */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-2xl p-4 sm:p-7 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center justify-between sm:justify-start gap-2 mb-2">
-            <button
-              onClick={onBackToApp}
-              className="p-1.5 -ml-1 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 active:scale-95 transition-colors md:hidden"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-bold">
-              <Key className="w-3 h-3" />
-              Superadmin Control Center
-            </div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-bold mb-2">
+            <Key className="w-3 h-3" />
+            Superadmin Control Center
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-serif-title font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-serif-title font-bold text-white tracking-tight flex items-center gap-2">
             Panel Kendali Superadmin
             <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-sans font-bold">
               tn.timbu

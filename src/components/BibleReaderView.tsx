@@ -80,9 +80,9 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 animate-fadeIn pb-safe md:pb-8">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-4 sm:p-7 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8">
+      {/* Desktop Header Banner */}
+      <div className="hidden sm:flex bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-5 sm:p-7 text-white border border-slate-800 shadow-xl flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[11px] font-semibold mb-2">
             <BookOpen className="w-3 h-3" />
@@ -96,7 +96,6 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
           </p>
         </div>
 
-        {/* Quick Action Button */}
         <button
           onClick={() => onUseForSermon(`${chapterData.bookName} ${chapterData.chapter}:1-6`, chapterData.bookName)}
           className="w-full md:w-auto px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30 active:scale-95 transition-all shrink-0 cursor-pointer"
@@ -106,10 +105,29 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
         </button>
       </div>
 
+      {/* Mobile-optimized Header Strip */}
+      <div className="sm:hidden flex items-center justify-between gap-2 bg-slate-900 text-white p-3 rounded-xl border border-slate-800">
+        <div className="min-w-0">
+          <p className="font-serif-title font-bold text-sm text-white truncate">
+            {chapterData.bookName} {chapterData.chapter}
+          </p>
+          <p className="text-[10px] text-amber-400 truncate">
+            {chapterData.verses.length} ayat • TB, KJV, Tolaki
+          </p>
+        </div>
+        <button
+          onClick={() => onUseForSermon(`${chapterData.bookName} ${chapterData.chapter}:1-6`, chapterData.bookName)}
+          className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px] flex items-center gap-1 shrink-0 active:scale-95"
+        >
+          <Sparkles className="w-3 h-3" />
+          <span>Buat Khotbah</span>
+        </button>
+      </div>
+
       {/* Control Bar: Book & Chapter Dropdowns, Search, and Version Switchers */}
-      <div className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-5 shadow-xs space-y-3.5">
+      <div className="bg-white rounded-2xl border border-stone-200/90 p-3 sm:p-5 shadow-xs space-y-3">
         {/* Row 1: Book & Chapter side-by-side on mobile */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div className="col-span-1 sm:col-span-2">
             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
               Pilih Kitab
@@ -120,7 +138,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
                 setSelectedBookId(e.target.value);
                 setSelectedChapter(1);
               }}
-              className="w-full px-3 py-2 text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
+              className="w-full px-2.5 py-1.5 text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
             >
               {BIBLE_BOOKS.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -137,7 +155,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
             <select
               value={selectedChapter}
               onChange={(e) => setSelectedChapter(Number(e.target.value))}
-              className="w-full px-3 py-2 text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
+              className="w-full px-2.5 py-1.5 text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
             >
               {Array.from({ length: selectedBook.chaptersCount }, (_, i) => i + 1).map((ch) => (
                 <option key={ch} value={ch}>
@@ -159,7 +177,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari kata atau ayat..."
-                className="w-full pl-8 pr-7 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-800"
+                className="w-full pl-8 pr-7 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-800"
               />
               {searchQuery && (
                 <button
@@ -174,7 +192,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
         </div>
 
         {/* Quick perikop navigation pills */}
-        <div>
+        <div className="hidden sm:block">
           <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
             Perikop Pilihan Cepat
           </label>
@@ -205,66 +223,64 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
           </div>
         </div>
 
-        {/* Version Switchers & Comparison Mode Toggle */}
-        <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        {/* Unified Version Switcher Segmented Bar */}
+        <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200 w-full sm:w-auto">
             <button
-              onClick={() => setCompareMode(true)}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-colors ${
-                compareMode
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => {
+                setCompareMode(false);
+                setActiveVersion('TB');
+              }}
+              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                !compareMode && activeVersion === 'TB'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-700 hover:text-slate-950'
               }`}
             >
-              <Columns3 className="w-3.5 h-3.5" />
-              <span>3 Versi Bersama</span>
+              TB (LAI)
             </button>
             <button
-              onClick={() => setCompareMode(false)}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-colors ${
-                !compareMode
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => {
+                setCompareMode(false);
+                setActiveVersion('KJV');
+              }}
+              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                !compareMode && activeVersion === 'KJV'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-700 hover:text-slate-950'
               }`}
             >
-              <span>Versi Tunggal</span>
+              KJV
+            </button>
+            <button
+              onClick={() => {
+                setCompareMode(false);
+                setActiveVersion('TOLAKI');
+              }}
+              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                !compareMode && activeVersion === 'TOLAKI'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-700 hover:text-slate-950'
+              }`}
+            >
+              Tolaki
+            </button>
+            <button
+              onClick={() => setCompareMode(true)}
+              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors ${
+                compareMode
+                  ? 'bg-slate-900 text-amber-400 shadow-xs'
+                  : 'text-slate-700 hover:text-slate-950'
+              }`}
+            >
+              <Columns3 className="w-3 h-3" />
+              <span>3 Versi</span>
             </button>
           </div>
 
-          {!compareMode && (
-            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200 w-full sm:w-auto">
-              <button
-                onClick={() => setActiveVersion('TB')}
-                className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-                  activeVersion === 'TB'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs'
-                    : 'text-slate-700 hover:text-slate-950'
-                }`}
-              >
-                TB (LAI)
-              </button>
-              <button
-                onClick={() => setActiveVersion('KJV')}
-                className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-                  activeVersion === 'KJV'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs'
-                    : 'text-slate-700 hover:text-slate-950'
-                }`}
-              >
-                King James
-              </button>
-              <button
-                onClick={() => setActiveVersion('TOLAKI')}
-                className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-                  activeVersion === 'TOLAKI'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs'
-                    : 'text-slate-700 hover:text-slate-950'
-                }`}
-              >
-                Tolaki
-              </button>
-            </div>
-          )}
+          <span className="text-[11px] text-slate-400 hidden sm:inline">
+            Menampilkan {displayVerses.length} ayat
+          </span>
         </div>
       </div>
 

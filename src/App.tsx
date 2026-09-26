@@ -232,7 +232,7 @@ export default function App() {
       />
 
       {/* View Routing */}
-      <div className={`flex-1 flex flex-col ${currentView === 'editor' ? 'pb-0' : 'pb-20 md:pb-0'}`}>
+      <div className={`flex-1 flex flex-col ${['dashboard', 'bible', 'commentary', 'history'].includes(currentView) ? 'pb-20 md:pb-0' : 'pb-0'}`}>
         {currentView === 'landing' && (
           <LandingPage
             onStartNow={() => {
@@ -351,13 +351,15 @@ export default function App() {
         )}
       </div>
 
-      {/* Mobile Bottom Navigation for Android & Touch Devices */}
-      <MobileBottomNav
-        currentUser={currentUser}
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        onOpenAuth={() => setIsAuthOpen(true)}
-      />
+      {/* Mobile Bottom Navigation for Android & Touch Devices (only on main views) */}
+      {['dashboard', 'bible', 'commentary', 'history'].includes(currentView) && (
+        <MobileBottomNav
+          currentUser={currentUser}
+          currentView={currentView}
+          onNavigate={handleNavigate}
+          onOpenAuth={() => setIsAuthOpen(true)}
+        />
+      )}
 
       {/* Subscription Paywall Modal */}
       <SubscriptionPaywallModal

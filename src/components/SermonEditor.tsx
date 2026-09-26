@@ -315,14 +315,14 @@ Christian Sermon Builder | Soli Deo Gloria`;
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col pb-safe md:pb-8">
-      {/* Android Top App Bar: Sticky on mobile top-0, and sticky on desktop top-16 */}
+      {/* Top App Bar */}
       <header className="bg-slate-900 border-b border-slate-800 text-white px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 md:top-16 z-30 shadow-md safe-area-top">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
-          {/* Left Slot: Android Back Arrow + Title Lockup */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          {/* Left Slot: Back Arrow + Title */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
               onClick={onBackToDashboard}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-transform shrink-0"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-transform shrink-0"
               aria-label="Kembali ke Dashboard"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -333,7 +333,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
                 type="text"
                 value={sermon.title}
                 onChange={(e) => updateField('title', e.target.value)}
-                className="font-serif-title font-bold text-sm sm:text-base md:text-lg bg-transparent border-b border-transparent hover:border-slate-600 focus:border-amber-400 focus:outline-none text-white w-full truncate"
+                className="font-serif-title font-bold text-xs sm:text-base md:text-lg bg-transparent border-b border-transparent hover:border-slate-600 focus:border-amber-400 focus:outline-none text-white w-full truncate"
                 placeholder="Judul Khotbah..."
               />
               <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400 truncate">
@@ -347,11 +347,11 @@ Christian Sermon Builder | Soli Deo Gloria`;
           </div>
 
           {/* Right Slot: Save status & Actions */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Save Status Indicator */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-800/80 text-[10px] sm:text-[11px] text-slate-300">
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-md bg-slate-800/80 text-[10px] text-slate-300">
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full ${
                   saveStatus === 'saved' ? 'bg-emerald-400' : 'bg-amber-400 animate-ping'
                 }`}
               />
@@ -363,7 +363,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
             {/* Slide PPT Button */}
             <button
               onClick={() => onOpenPowerPoint(sermon)}
-              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm active:scale-95"
+              className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-xs active:scale-95"
             >
               <Presentation className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Slide PPT</span>
@@ -389,46 +389,46 @@ Christian Sermon Builder | Soli Deo Gloria`;
             {/* Mobile 3-dot More Menu */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95"
               aria-label="Menu Opsi Khotbah"
             >
-              <MoreVertical className="w-5 h-5" />
+              <MoreVertical className="w-4 h-4" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Android Mobile Segmented Tabs Bar: [ 📝 Naskah ] [ 📋 Poin Khotbah ] [ ✨ Asisten AI ] */}
-      <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-2.5 py-1.5 flex items-center justify-around gap-1.5 sticky top-14 md:top-30 z-20 shadow-xs">
+      {/* Mobile Segmented Tabs Bar: [ Naskah ] [ Poin ] [ Asisten AI ] */}
+      <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-2 py-1.5 flex items-center justify-around gap-1.5 sticky top-[49px] z-20 shadow-xs">
         <button
           onClick={() => setMobileTab('editor')}
-          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all active:scale-95 ${
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-center transition-all active:scale-95 ${
             mobileTab === 'editor'
-              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
               : 'text-slate-300 hover:bg-slate-900'
           }`}
         >
-          📝 Naskah
+          Naskah
         </button>
         <button
           onClick={() => setMobileTab('outline')}
-          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all active:scale-95 ${
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-center transition-all active:scale-95 ${
             mobileTab === 'outline'
-              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
               : 'text-slate-300 hover:bg-slate-900'
           }`}
         >
-          📋 Poin ({sermon.main_points.length})
+          Poin ({sermon.main_points.length})
         </button>
         <button
           onClick={() => setMobileTab('ai')}
-          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all active:scale-95 ${
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-center transition-all active:scale-95 ${
             mobileTab === 'ai'
-              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
               : 'text-slate-300 hover:bg-slate-900'
           }`}
         >
-          ✨ Asisten AI
+          Asisten AI
         </button>
       </div>
 

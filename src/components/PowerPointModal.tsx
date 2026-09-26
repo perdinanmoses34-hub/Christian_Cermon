@@ -344,27 +344,27 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
         <div className="md:hidden bg-slate-950/90 border-b border-slate-800 px-2 py-1.5 flex items-center justify-around gap-1 shrink-0">
           <button
             onClick={() => setMobileTab('slide')}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all ${
-              mobileTab === 'slide' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-center transition-all ${
+              mobileTab === 'slide' ? 'bg-amber-500 text-slate-950 font-bold shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
             }`}
           >
-            📊 Preview Slide
+            Preview Slide
           </button>
           <button
             onClick={() => setMobileTab('notes')}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all ${
-              mobileTab === 'notes' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-center transition-all ${
+              mobileTab === 'notes' ? 'bg-amber-500 text-slate-950 font-bold shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
             }`}
           >
-            🎙️ Catatan Mimbar
+            Catatan Mimbar
           </button>
           <button
             onClick={() => setMobileTab('style')}
-            className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all ${
-              mobileTab === 'style' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-center transition-all ${
+              mobileTab === 'style' ? 'bg-amber-500 text-slate-950 font-bold shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
             }`}
           >
-            🎨 Gaya & Template
+            Tema & Warna
           </button>
         </div>
 

@@ -268,27 +268,27 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
       )}
 
       {/* Main Wizard Header */}
-      <div className="mb-5 sm:mb-8">
+      <div className="mb-4 sm:mb-8">
         <button
           onClick={onCancel}
-          className="text-xs font-semibold text-slate-500 hover:text-slate-900 mb-2 flex items-center gap-1.5 active:scale-95 transition-all"
+          className="hidden sm:inline-flex text-xs font-semibold text-slate-500 hover:text-slate-900 mb-2 items-center gap-1.5 active:scale-95 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Kembali ke Dashboard</span>
         </button>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-2">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-serif-title font-bold text-slate-900">
-              Formulir Khotbah Baru
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-serif-title font-bold text-slate-900 tracking-tight">
+              Susun Khotbah Baru
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Lengkapi informasi berikut untuk menyusun khotbah alkitabiah yang siap disampaikan.
+              Lengkapi tema, ayat, dan metode homiletika untuk menyusun naskah firman.
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold shrink-0">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-            <span>Alkitabiah & Bertanggung Jawab</span>
+            <span>Alkitabiah</span>
           </div>
         </div>
       </div>
@@ -499,40 +499,40 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
             AI akan menyelaraskan kerangka argumen, tafsiran, dan alur poin sesuai metodologi yang Anda pilih.
           </p>
 
-          {/* Compact 2-column or 4-column method cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Proportional 2-column on mobile, 4-column on desktop */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             {PREACHING_METHODS.map((m) => {
               const isSelected = method === m.id;
               return (
                 <div
                   key={m.id}
                   onClick={() => setMethod(m.id)}
-                  className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between active:scale-[0.98] ${
+                  className={`p-2.5 sm:p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between active:scale-[0.98] ${
                     isSelected
-                      ? 'border-amber-500 bg-amber-50/70 shadow-sm ring-2 ring-amber-500/20'
+                      ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-1 ring-amber-500'
                       : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50/60'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-bold text-slate-900 text-xs sm:text-sm font-serif-title">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <h4 className="font-bold text-slate-900 text-xs sm:text-sm font-serif-title truncate">
                         {m.name}
                       </h4>
                       {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <div className="w-4 h-4 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shrink-0">
+                          <Check className="w-3 h-3 stroke-[3]" />
                         </div>
                       )}
                     </div>
-                    <p className="text-[11px] font-semibold text-amber-700 mb-1">
+                    <p className="text-[10px] sm:text-[11px] font-semibold text-amber-700 line-clamp-1">
                       {m.tagline}
                     </p>
-                    <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="hidden sm:block text-[11px] text-slate-600 line-clamp-2 leading-relaxed mt-1">
                       {m.desc}
                     </p>
                   </div>
 
-                  <div className="pt-2 mt-2 border-t border-stone-200/60 flex flex-wrap gap-1">
+                  <div className="pt-1.5 mt-1.5 border-t border-stone-200/60 hidden sm:flex flex-wrap gap-1">
                     {m.structure.slice(0, 3).map((st, i) => (
                       <span key={i} className="text-[9px] bg-stone-100 text-slate-600 px-1.5 py-0.5 rounded">
                         {st}
@@ -641,15 +641,24 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
         </div>
 
         {/* Mobile Sticky Bottom CTA Bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-stone-200/90 z-30 shadow-2xl safe-area-bottom">
-          <button
-            type="submit"
-            disabled={isGenerating}
-            className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-900/30 flex items-center justify-center gap-2 active:scale-98 transition-transform"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Buat Khotbah Sekarang (AI)</span>
-          </button>
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-stone-200 z-30 shadow-lg safe-area-bottom">
+          <div className="max-w-md mx-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="py-2.5 px-4 rounded-xl border border-stone-300 text-slate-700 font-semibold text-xs active:scale-95"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isGenerating}
+              className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-900/20 flex items-center justify-center gap-2 active:scale-98 transition-transform"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{isGenerating ? 'Menyusun...' : 'Buat Khotbah Sekarang (AI)'}</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>
