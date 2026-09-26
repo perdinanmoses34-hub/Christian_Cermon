@@ -5,7 +5,7 @@ import { User } from '../types/sermon';
 interface NavbarProps {
   currentUser: User | null;
   currentView: string;
-  onNavigate: (view: 'landing' | 'dashboard' | 'create' | 'history') => void;
+  onNavigate: (view: 'landing' | 'dashboard' | 'create' | 'history' | 'bible' | 'commentary') => void;
   onOpenAuth: () => void;
   onLogout: () => void;
   onOpenHowItWorks: () => void;
@@ -49,60 +49,96 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Navigation items */}
         {currentUser ? (
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             <button
               onClick={() => onNavigate('dashboard')}
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 currentView === 'dashboard'
-                  ? 'bg-slate-800 text-amber-400'
+                  ? 'bg-slate-800 text-amber-400 font-bold'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
+              <LayoutDashboard className="w-3.5 h-3.5" />
               Dashboard
             </button>
             <button
               onClick={() => onNavigate('create')}
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 currentView === 'create'
                   ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-amber-500 text-slate-950 hover:bg-amber-400 font-semibold shadow-sm'
+                  : 'bg-amber-500 text-slate-950 hover:bg-amber-400 font-bold shadow-sm'
               }`}
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               Buat Khotbah Baru
             </button>
             <button
-              onClick={() => onNavigate('history')}
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                currentView === 'history'
-                  ? 'bg-slate-800 text-amber-400'
+              onClick={() => onNavigate('bible')}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                currentView === 'bible'
+                  ? 'bg-slate-800 text-amber-400 font-bold'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              <Library className="w-4 h-4" />
+              <BookOpen className="w-3.5 h-3.5" />
+              Alkitab (TB/KJV/Tolaki)
+            </button>
+            <button
+              onClick={() => onNavigate('commentary')}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                currentView === 'commentary'
+                  ? 'bg-slate-800 text-amber-400 font-bold'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Tafsiran Pakar
+            </button>
+            <button
+              onClick={() => onNavigate('history')}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                currentView === 'history'
+                  ? 'bg-slate-800 text-amber-400 font-bold'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Library className="w-3.5 h-3.5" />
               Khotbah Saya
             </button>
             <button
               onClick={onOpenHowItWorks}
-              className="px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-slate-200 transition-colors"
+              className="px-2.5 py-2 rounded-lg text-xs text-slate-400 hover:text-slate-200 transition-colors"
             >
               Cara Kerja
             </button>
           </nav>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigate('bible')}
+              className="hidden sm:flex text-xs text-slate-300 hover:text-white px-3 py-2 font-medium items-center gap-1.5"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              Alkitab 3-Versi
+            </button>
+            <button
+              onClick={() => onNavigate('commentary')}
+              className="hidden sm:flex text-xs text-slate-300 hover:text-white px-3 py-2 font-medium items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              Tafsiran Pakar
+            </button>
             <button
               onClick={onOpenHowItWorks}
-              className="text-sm text-slate-300 hover:text-white px-3 py-2 font-medium"
+              className="text-xs text-slate-400 hover:text-slate-200 px-2 py-2"
             >
-              Lihat Cara Kerja
+              Cara Kerja
             </button>
             <button
               onClick={onOpenAuth}
-              className="text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2"
+              className="text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 px-3.5 py-1.5 rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-3.5 h-3.5" />
               Masuk / Mulai
             </button>
           </div>
@@ -154,6 +190,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Plus className="w-4 h-4" />
                   Buat Khotbah Baru
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onNavigate('bible');
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 flex items-center gap-2.5"
+                >
+                  <BookOpen className="w-4 h-4 text-amber-400" />
+                  Alkitab (TB / KJV / Tolaki)
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onNavigate('commentary');
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 flex items-center gap-2.5"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Tafsiran Pakar Kredibel
                 </button>
                 <button
                   onClick={() => {

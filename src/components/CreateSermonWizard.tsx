@@ -21,6 +21,7 @@ import { generateSermonApi } from '../services/api';
 
 interface CreateSermonWizardProps {
   currentUser: any;
+  initialData?: { scripture?: string; theme?: string; objective?: string };
   onSuccess: (sermon: Sermon) => void;
   onCancel: () => void;
 }
@@ -103,14 +104,15 @@ const GENERATION_STEPS = [
 
 export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
   currentUser,
+  initialData,
   onSuccess,
   onCancel,
 }) => {
   // Form State
-  const [theme, setTheme] = useState('');
-  const [mainScripture, setMainScripture] = useState('');
+  const [theme, setTheme] = useState(initialData?.theme || '');
+  const [mainScripture, setMainScripture] = useState(initialData?.scripture || '');
   const [supportingScriptures, setSupportingScriptures] = useState<string[]>(['']);
-  const [objective, setObjective] = useState('');
+  const [objective, setObjective] = useState(initialData?.objective || '');
   const [audience, setAudience] = useState<TargetAudience>('dewasa');
   const [duration, setDuration] = useState('30 menit');
   const [customDuration, setCustomDuration] = useState('');

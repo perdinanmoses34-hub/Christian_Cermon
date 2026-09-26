@@ -17,12 +17,16 @@ import {
   deleteSermonApi,
 } from './services/api';
 import { SermonHistoryView } from './components/SermonHistoryView';
+import { BibleReaderView } from './components/BibleReaderView';
+import { CommentaryView } from './components/CommentaryView';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'create' | 'editor' | 'history'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'create' | 'editor' | 'history' | 'bible' | 'commentary'>('landing');
   const [sermons, setSermons] = useState<Sermon[]>([]);
   const [activeSermon, setActiveSermon] = useState<Sermon | null>(null);
+  const [wizardInitialData, setWizardInitialData] = useState<{ scripture?: string; theme?: string; objective?: string } | null>(null);
+  const [commentaryInitialPassage, setCommentaryInitialPassage] = useState<string>('');
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -171,7 +175,10 @@ export default function App() {
           <Dashboard
             currentUser={currentUser}
             sermons={sermons}
-            onCreateNew={() => setCurrentView('create')}
+            onCreateNew={() => {
+              setWizardInitialData(null);
+              setCurrentView('create');
+            }}
             onOpenSermon={handleOpenSermon}
             onOpenPowerPoint={handleOpenPowerPoint}
             onDuplicateSermon={handleDuplicateSermon}
@@ -182,8 +189,57 @@ export default function App() {
         {currentView === 'create' && currentUser && (
           <CreateSermonWizard
             currentUser={currentUser}
-            onSuccess={handleSermonCreated}
-            onCancel={() => setCurrentView('dashboard')}
+            initialData={wizardInitialData || undefined}
+            onSuccess={(newSermon) => {
+              setWizardInitialData(null);
+              handleSermonCreated(newSermon);
+            }}
+            onCancel={() => {
+              setWizardInitialData(null);
+              setCurrentView('dashboard');
+            }}
+          />
+        )}
+
+        {currentView === 'bible' && (
+          <BibleReaderView
+            onUseForSermon={(verseRef, themeHint) => {
+              setWizardInitialData({
+                scripture: verseRef,
+                theme: themeHint || '',
+                objective: `Membimbing jemaat memahami kebenaran firman Tuhan dalam ${verseRef}.`,
+              });
+              if (!currentUser) {
+                setIsAuthOpen(true);
+              } else {
+                setCurrentView('create');
+              }
+            }}
+            onOpenCommentaryForPassage={(passage) => {
+              setCommentaryInitialPassage(passage);
+              setCurrentView('commentary');
+            }}
+          />
+        )}
+
+        {currentView === 'commentary' && (
+          <CommentaryView
+            initialPassage={commentaryInitialPassage}
+            onUseForSermon={(passage, theme, bigIdea) => {
+              setWizardInitialData({
+                scripture: passage,
+                theme: theme || 'Kebenaran Firman Tuhan',
+                objective: bigIdea || '',
+              });
+              if (!currentUser) {
+                setIsAuthOpen(true);
+              } else {
+                setCurrentView('create');
+              }
+            }}
+            onOpenBiblePassage={(bookId, chapter) => {
+              setCurrentView('bible');
+            }}
           />
         )}
 
@@ -204,7 +260,10 @@ export default function App() {
             onOpenPowerPoint={handleOpenPowerPoint}
             onDuplicateSermon={handleDuplicateSermon}
             onDeleteSermon={handleDeleteSermon}
-            onCreateNew={() => setCurrentView('create')}
+            onCreateNew={() => {
+              setWizardInitialData(null);
+              setCurrentView('create');
+            }}
           />
         )}
       </div>
