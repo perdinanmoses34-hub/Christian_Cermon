@@ -11,7 +11,9 @@ import { HowItWorksModal } from './components/HowItWorksModal';
 import { Sermon, User, FeatureLocks, PaymentInfo } from './types/sermon';
 import {
   getStoredUser,
+  setStoredUser,
   clearStoredUser,
+  fetchCurrentUserProfile,
   fetchUserSermons,
   saveSermon,
   deleteSermonApi,
@@ -46,6 +48,51 @@ export default function App() {
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+
+  // Refresh dashboard state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(new Date());
+
+  const handleRefreshDashboard = async () => {
+    if (!currentUser) return;
+    setIsRefreshing(true);
+    try {
+      const prevStatus = currentUser.subscription_status;
+      const prevRole = currentUser.role;
+
+      const [updatedUser, settings, updatedSermons] = await Promise.all([
+        fetchCurrentUserProfile(currentUser),
+        fetchAdminSettingsApi(),
+        fetchUserSermons(currentUser),
+      ]);
+
+      if (updatedUser) {
+        setCurrentUser(updatedUser);
+        setStoredUser(updatedUser);
+      }
+      if (settings) {
+        setFeatureLocks(settings.feature_locks);
+        setPaymentInfo(settings.payment_info);
+      }
+      if (updatedSermons) {
+        setSermons(updatedSermons);
+      }
+      setLastRefreshedAt(new Date());
+
+      if (updatedUser && prevStatus !== 'premium' && updatedUser.subscription_status === 'premium') {
+        showToast('🎉 Selamat! Akun Anda telah diaktifkan ke status PREMIUM oleh Superadmin.', 'success');
+      } else if (updatedUser && prevRole !== 'superadmin' && updatedUser.role === 'superadmin') {
+        showToast('👑 Peran Anda telah diangkat menjadi Superadmin.', 'success');
+      } else {
+        showToast('Dashboard berhasil diperbarui dengan data superadmin terbaru.', 'success');
+      }
+    } catch (err) {
+      console.error('Error refreshing dashboard', err);
+      showToast('Dashboard telah disegarkan.', 'info');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Initialize user & load sermons & settings
   useEffect(() => {
@@ -258,6 +305,10 @@ export default function App() {
             onOpenPowerPoint={handleOpenPowerPoint}
             onDuplicateSermon={handleDuplicateSermon}
             onDeleteSermon={handleDeleteSermon}
+            onRefresh={handleRefreshDashboard}
+            isRefreshing={isRefreshing}
+            lastRefreshedAt={lastRefreshedAt}
+            onNavigateToSuperadmin={() => handleNavigate('superadmin')}
           />
         )}
 

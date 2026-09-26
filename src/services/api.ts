@@ -74,6 +74,44 @@ export function clearStoredUser(): void {
   localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
 }
 
+export async function fetchCurrentUserProfile(user: User): Promise<User> {
+  try {
+    const res = await fetch('/api/auth/me', {
+      headers: {
+        'x-user-id': user.id,
+        'x-user-email': user.email || '',
+        Authorization: `Bearer ${user.id}`,
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.user) {
+        const mergedUser = { ...user, ...data.user };
+        setStoredUser(mergedUser);
+        return mergedUser;
+      }
+    }
+  } catch (err) {
+    console.warn('Backend /api/auth/me unreachable, checking local user storage', err);
+  }
+
+  // Fallback to local users list if backend offline or mocked
+  const usersList = getStoredUsersList();
+  const matched = usersList.find(
+    (u) =>
+      u.id === user.id ||
+      (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase()) ||
+      (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase())
+  );
+  if (matched) {
+    const updatedUser = { ...user, ...matched };
+    setStoredUser(updatedUser);
+    return updatedUser;
+  }
+
+  return user;
+}
+
 export function getStoredFeatureLocks(): FeatureLocks {
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_LOCKS_KEY);

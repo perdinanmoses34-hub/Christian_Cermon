@@ -19,6 +19,9 @@ import {
   SlidersHorizontal,
   ChevronRight,
   Check,
+  RefreshCw,
+  Crown,
+  ShieldCheck,
 } from 'lucide-react';
 import { Sermon, User, PreachingMethod, TargetAudience } from '../types/sermon';
 import { exportToPowerPoint } from '../services/pptxExporter';
@@ -31,6 +34,10 @@ interface DashboardProps {
   onOpenPowerPoint: (sermon: Sermon) => void;
   onDuplicateSermon: (sermon: Sermon) => void;
   onDeleteSermon: (sermonId: string) => void;
+  onRefresh?: () => Promise<void>;
+  isRefreshing?: boolean;
+  lastRefreshedAt?: Date | null;
+  onNavigateToSuperadmin?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -41,7 +48,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenPowerPoint,
   onDuplicateSermon,
   onDeleteSermon,
+  onRefresh,
+  isRefreshing = false,
+  lastRefreshedAt = null,
+  onNavigateToSuperadmin,
 }) => {
+  const [localRefreshing, setLocalRefreshing] = useState(false);
+  const refreshing = isRefreshing || localRefreshing;
+
+  const handleRefreshClick = async () => {
+    if (onRefresh) {
+      await onRefresh();
+    } else {
+      setLocalRefreshing(true);
+      setTimeout(() => setLocalRefreshing(false), 800);
+    }
+  };
+
+  const formattedRefreshTime = useMemo(() => {
+    if (!lastRefreshedAt) return null;
+    return lastRefreshedAt.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }, [lastRefreshedAt]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string>('all');
   const [selectedAudience, setSelectedAudience] = useState<string>('all');
@@ -151,11 +182,37 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-4 sm:p-7 text-white border border-slate-800 shadow-xl relative overflow-hidden w-full">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 w-full min-w-0">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[11px] font-semibold mb-2">
-              <Sparkles className="w-3 h-3 shrink-0" />
-              <span>Soli Deo Gloria</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[11px] font-semibold">
+                <Sparkles className="w-3 h-3 shrink-0" />
+                <span>Soli Deo Gloria</span>
+              </div>
+
+              {currentUser.role === 'superadmin' ? (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/25 border border-purple-500/40 text-purple-300 text-[11px] font-semibold">
+                  <Crown className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>Superadmin</span>
+                </div>
+              ) : currentUser.subscription_status === 'premium' ? (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold">
+                  <Crown className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>Akun Premium Aktif</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-medium">
+                  <span>Akun Gratis</span>
+                </div>
+              )}
+
+              {formattedRefreshTime && (
+                <span className="text-[11px] text-slate-400 hidden sm:inline-flex items-center gap-1 font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  Sinkron: {formattedRefreshTime} WIB
+                </span>
+              )}
             </div>
+
             <h1 className="text-xl sm:text-2xl md:text-3xl font-serif-title font-bold text-white tracking-tight truncate">
               Shalom, {currentUser.name}!
             </h1>
@@ -164,13 +221,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={onCreateNew}
-            className="w-full md:w-auto px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-amber-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5] shrink-0" />
-            <span>Buat Khotbah Baru</span>
-          </button>
+          <div className="flex flex-row items-center gap-2 w-full md:w-auto shrink-0">
+            {/* Tombol Refresh / Segarkan Data Dashboard */}
+            <button
+              onClick={handleRefreshClick}
+              disabled={refreshing}
+              title="Perbarui tampilan & periksa perubahan status dari Superadmin"
+              className="flex-1 md:flex-initial px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-slate-800/95 hover:bg-slate-750 text-slate-200 hover:text-white border border-slate-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold cursor-pointer shadow-md disabled:opacity-60"
+            >
+              <RefreshCw className={`w-4 h-4 text-amber-400 shrink-0 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="whitespace-nowrap">{refreshing ? 'Memperbarui...' : 'Segarkan Data'}</span>
+            </button>
+
+            <button
+              onClick={onCreateNew}
+              className="flex-1 md:flex-initial px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-amber-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5] shrink-0" />
+              <span className="whitespace-nowrap">Buat Khotbah Baru</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -220,27 +290,47 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Main Section: Khotbah & Mobile-First Filter Experience */}
       <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs overflow-hidden">
         {/* Section Header */}
-        <div className="p-4 sm:p-6 border-b border-stone-100 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base sm:text-xl font-serif-title font-bold text-slate-900">
-              Koleksi Khotbah
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+        <div className="p-3.5 sm:p-5 border-b border-stone-100 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-xl font-serif-title font-bold text-slate-900 truncate">
+                Koleksi Khotbah
+              </h2>
+              {formattedRefreshTime && (
+                <span className="hidden sm:inline-block text-[11px] text-slate-400 bg-stone-100 px-2 py-0.5 rounded-md font-mono shrink-0">
+                  Sinkron: {formattedRefreshTime}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">
               {filteredSermons.length} naskah khotbah tersedia
             </p>
           </div>
 
-          {/* Quick Filter Drawer Button for Mobile */}
-          <button
-            onClick={() => setIsFilterDrawerOpen(true)}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-slate-700 active:scale-95 transition-all"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>Filter</span>
-            {(selectedAudience !== 'all' || sortBy !== 'newest') && (
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-            )}
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Quick Refresh Button in Section Header */}
+            <button
+              onClick={handleRefreshClick}
+              disabled={refreshing}
+              title="Perbarui daftar naskah & data superadmin"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-stone-200/90 bg-white hover:bg-stone-50 text-slate-700 text-xs font-semibold active:scale-95 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-amber-600 shrink-0 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{refreshing ? 'Memperbarui...' : 'Refresh'}</span>
+            </button>
+
+            {/* Quick Filter Drawer Button for Mobile */}
+            <button
+              onClick={() => setIsFilterDrawerOpen(true)}
+              className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-slate-700 active:scale-95 transition-all"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Filter</span>
+              {(selectedAudience !== 'all' || sortBy !== 'newest') && (
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Search Bar & Horizontal Method Chip Carousel */}
@@ -328,13 +418,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 ? 'Tidak ada khotbah yang cocok dengan kata kunci atau filter yang Anda pilih.'
                 : 'Mulai susun naskah khotbah pertama Anda dengan bimbingan AI sekarang.'}
             </p>
-            <button
-              onClick={onCreateNew}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs inline-flex items-center gap-2 active:scale-95 shadow-sm"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              Buat Khotbah Sekarang
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                onClick={handleRefreshClick}
+                disabled={refreshing}
+                className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-700 font-bold text-xs inline-flex items-center gap-2 active:scale-95 border border-stone-200 cursor-pointer disabled:opacity-60"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-amber-600 shrink-0 ${refreshing ? 'animate-spin' : ''}`} />
+                <span>{refreshing ? 'Memperbarui...' : 'Segarkan Data'}</span>
+              </button>
+              <button
+                onClick={onCreateNew}
+                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs inline-flex items-center gap-2 active:scale-95 shadow-sm cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Buat Khotbah Sekarang</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="divide-y divide-stone-100">

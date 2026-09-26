@@ -523,12 +523,23 @@ app.put('/api/admin/settings', (req: Request, res: Response) => {
 
 app.get('/api/auth/me', (req: Request, res: Response) => {
   const userId = getUserIdFromRequest(req);
+  const userEmail = ((req.headers['x-user-email'] as string) || '').toLowerCase().trim();
   const db = loadDB();
-  const user = db.users.find((u) => u.id === userId) || {
+  const foundUser = db.users.find(
+    (u) =>
+      u.id === userId ||
+      (userEmail && u.email && u.email.toLowerCase() === userEmail) ||
+      (u.username && u.username.toLowerCase() === userId.toLowerCase())
+  );
+
+  const user = foundUser || {
     id: userId,
     name: 'Pdt. David Christian',
     email: 'david@gereja.id',
     church_name: 'Gereja Kristen Indonesia',
+    role: 'user',
+    subscription_status: 'free',
+    is_active: true,
   };
   res.json({ user });
 });
