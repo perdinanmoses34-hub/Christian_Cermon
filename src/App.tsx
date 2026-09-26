@@ -232,7 +232,7 @@ export default function App() {
       />
 
       {/* View Routing */}
-      <div className="flex-1 flex flex-col pb-20 md:pb-0">
+      <div className={`flex-1 flex flex-col ${currentView === 'editor' ? 'pb-0' : 'pb-20 md:pb-0'}`}>
         {currentView === 'landing' && (
           <LandingPage
             onStartNow={() => {

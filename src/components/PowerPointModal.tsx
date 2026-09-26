@@ -19,6 +19,7 @@ import {
   AlertCircle,
   FileText,
   Sliders,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   Sermon,
@@ -78,6 +79,7 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
   const [colorPalette, setColorPalette] = useState<PPTColorPalette>(powerpoint.colorPalette || 'navy');
   const [font, setFont] = useState<PPTFont>(powerpoint.font || 'Inter');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '4:3'>(powerpoint.aspectRatio || '16:9');
+  const [mobileTab, setMobileTab] = useState<'slide' | 'notes' | 'style'>('slide');
 
   const [slides, setSlides] = useState<PowerPointSlide[]>(
     powerpoint.slides && powerpoint.slides.length > 0
@@ -182,7 +184,6 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
     });
   };
 
-  // Download PPTX
   const handleDownloadPptx = async () => {
     setIsExporting(true);
     setErrorMessage('');
@@ -203,7 +204,6 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
     }
   };
 
-  // Regenerate slides using AI
   const handleRegenerateWithAi = async () => {
     setIsRegenerating(true);
     setErrorMessage('');
@@ -229,7 +229,6 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
     }
   };
 
-  // Slide visual styling according to color palette
   const getSlideThemeStyles = () => {
     switch (colorPalette) {
       case 'blue':
@@ -252,10 +251,10 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
         };
       case 'beige':
         return {
-          bg: 'bg-stone-200',
+          bg: 'bg-stone-100',
           card: 'bg-white border-stone-300',
           text: 'text-slate-900',
-          subtext: 'text-slate-700',
+          subtext: 'text-slate-600',
           accent: 'text-amber-800',
           line: 'bg-amber-700',
         };
@@ -264,9 +263,9 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
           bg: 'bg-white',
           card: 'bg-stone-50 border-stone-200',
           text: 'text-slate-900',
-          subtext: 'text-slate-700',
-          accent: 'text-blue-600',
-          line: 'bg-blue-600',
+          subtext: 'text-slate-600',
+          accent: 'text-amber-600',
+          line: 'bg-amber-500',
         };
       case 'dark':
         return {
@@ -293,29 +292,29 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
   const themeStyle = getSlideThemeStyles();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-6xl max-h-[94vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn safe-area-top safe-area-bottom">
+      <div className="bg-slate-900 border-0 sm:border border-slate-800 rounded-none sm:rounded-3xl w-full max-w-6xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-950">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold">
-              <Presentation className="w-5 h-5" />
+        <div className="p-3.5 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-3 bg-slate-950 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
+              <Presentation className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h3 className="font-serif-title font-bold text-base sm:text-lg text-white">
-                PowerPoint Slide Builder & Preview
+            <div className="min-w-0">
+              <h3 className="font-serif-title font-bold text-sm sm:text-base text-white truncate">
+                Slide PowerPoint (.PPTX)
               </h3>
-              <p className="text-xs text-slate-400">
-                {sermon.title} • {slides.length} Slides Siap Mimbar
+              <p className="text-[10px] sm:text-xs text-slate-400 truncate">
+                {sermon.title} • {slides.length} Slides
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handleRegenerateWithAi}
               disabled={isRegenerating}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-amber-500/30"
+              className="hidden sm:flex px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-semibold items-center gap-1.5 border border-amber-500/30 active:scale-95"
               title="Buat Ulang Slide dengan AI"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -325,40 +324,62 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
             <button
               onClick={handleDownloadPptx}
               disabled={isExporting}
-              className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-900/30 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-transform"
             >
               <Download className="w-4 h-4" />
-              <span>{isExporting ? 'Mengekspor...' : 'Download .PPTX'}</span>
+              <span className="hidden sm:inline">{isExporting ? 'Mengekspor...' : 'Download .PPTX'}</span>
+              <span className="sm:hidden">{isExporting ? '...' : '.PPTX'}</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 active:scale-95"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
+        {/* Mobile Tab Switcher */}
+        <div className="md:hidden bg-slate-950/90 border-b border-slate-800 px-2 py-1.5 flex items-center justify-around gap-1 shrink-0">
+          <button
+            onClick={() => setMobileTab('slide')}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all ${
+              mobileTab === 'slide' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
+            }`}
+          >
+            📊 Preview Slide
+          </button>
+          <button
+            onClick={() => setMobileTab('notes')}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all ${
+              mobileTab === 'notes' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
+            }`}
+          >
+            🎙️ Catatan Mimbar
+          </button>
+          <button
+            onClick={() => setMobileTab('style')}
+            className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all ${
+              mobileTab === 'style' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:bg-slate-800'
+            }`}
+          >
+            🎨 Gaya & Template
+          </button>
+        </div>
+
         {errorMessage && (
-          <div className="bg-rose-950/80 border-b border-rose-800 px-4 py-2 text-rose-300 text-xs flex items-center justify-between">
+          <div className="bg-rose-950/80 border-b border-rose-800 px-4 py-2 text-rose-300 text-xs flex items-center justify-between shrink-0">
             <span className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               {errorMessage}
             </span>
-            <button
-              onClick={handleDownloadPptx}
-              className="underline font-semibold hover:text-white ml-2"
-            >
-              Generate Again
-            </button>
           </div>
         )}
 
-        {/* Toolbar: Template, Color, Font, Aspect Ratio */}
-        <div className="p-3 bg-slate-950/70 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        {/* Desktop Toolbar: Template, Color, Font */}
+        <div className="hidden md:flex p-3 bg-slate-950/70 border-b border-slate-800 flex-wrap items-center justify-between gap-3 text-xs shrink-0">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Template Selector */}
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400">Template:</span>
               <select
@@ -374,7 +395,6 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
               </select>
             </div>
 
-            {/* Color Palette Selector */}
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400">Warna:</span>
               <div className="flex items-center gap-1">
@@ -392,7 +412,6 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
               </div>
             </div>
 
-            {/* Font Selector */}
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400">Font:</span>
               <select
@@ -408,46 +427,40 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
               </select>
             </div>
 
-            {/* Aspect Ratio */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">Rasio:</span>
-              <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setAspectRatio('16:9')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                    aspectRatio === '16:9' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
-                  }`}
-                >
-                  16:9
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAspectRatio('4:3')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                    aspectRatio === '4:3' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
-                  }`}
-                >
-                  4:3
-                </button>
-              </div>
+            <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+              <button
+                type="button"
+                onClick={() => setAspectRatio('16:9')}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                  aspectRatio === '16:9' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                }`}
+              >
+                16:9
+              </button>
+              <button
+                type="button"
+                onClick={() => setAspectRatio('4:3')}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                  aspectRatio === '4:3' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                }`}
+              >
+                4:3
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleAddSlide}
-              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-semibold flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" /> Tambah Slide
-            </button>
-          </div>
+          <button
+            onClick={handleAddSlide}
+            className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-semibold flex items-center gap-1 active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" /> Tambah Slide
+          </button>
         </div>
 
-        {/* Main Content: Left Thumbnails + Center Slide Canvas + Right Speaker Notes */}
-        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[460px]">
-          {/* Thumbnails Sidebar (3 cols) */}
-          <div className="md:col-span-3 border-r border-slate-800 bg-slate-950/40 p-3 overflow-y-auto space-y-2 max-h-[580px]">
+        {/* Modal Body: Responsive grid */}
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 min-h-0">
+          {/* Desktop Left: Thumbnails Sidebar (3 cols) */}
+          <div className="hidden md:block md:col-span-3 border-r border-slate-800 bg-slate-950/40 p-3 overflow-y-auto space-y-2">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Daftar Slide ({slides.length})
             </p>
@@ -506,99 +519,135 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
             })}
           </div>
 
-          {/* Center: Live Rendered Slide Canvas (6 cols) */}
-          <div className="md:col-span-6 p-4 sm:p-6 bg-slate-950/80 flex flex-col justify-between overflow-y-auto">
-            {/* The Slide Frame Mockup */}
-            <div className="flex-1 flex items-center justify-center">
-              <div
-                className={`w-full ${
-                  aspectRatio === '4:3' ? 'aspect-[4/3] max-w-lg' : 'aspect-video max-w-xl'
-                } ${themeStyle.bg} rounded-2xl shadow-2xl border border-slate-700/80 p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden transition-all`}
-                style={{ fontFamily: font }}
-              >
-                {/* Decorative Cross / Accent */}
-                <div className="absolute top-4 right-5 opacity-20 text-3xl font-cinzel">✝</div>
-
-                {currentSlideIndex === 0 || currentSlide?.slide_type === 'title' ? (
-                  // TITLE SLIDE LAYOUT
-                  <div className="my-auto text-center space-y-4">
-                    <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${themeStyle.accent}`}>
-                      CHRISTIAN SERMON BUILDER
-                    </span>
-                    <input
-                      type="text"
-                      value={currentSlide?.title || ''}
-                      onChange={(e) => updateCurrentSlide('title', e.target.value)}
-                      className={`w-full font-serif-title text-xl sm:text-3xl font-bold ${themeStyle.text} text-center bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none`}
-                    />
-                    <div className={`w-16 h-1 ${themeStyle.line} mx-auto rounded-full`} />
-                    <textarea
-                      rows={3}
-                      value={currentSlide?.content || ''}
-                      onChange={(e) => updateCurrentSlide('content', e.target.value)}
-                      className={`w-full text-xs sm:text-sm ${themeStyle.subtext} text-center bg-transparent border border-transparent hover:border-slate-500/40 rounded p-1 focus:outline-none`}
-                    />
-                  </div>
-                ) : (
-                  // STANDARD CONTENT SLIDE LAYOUT
-                  <div className="space-y-4 h-full flex flex-col">
-                    <div className="flex items-center gap-2.5 pb-2 border-b border-slate-700/40">
-                      <div className={`w-1 h-6 ${themeStyle.line} rounded-full`} />
-                      <input
-                        type="text"
-                        value={currentSlide?.title || ''}
-                        onChange={(e) => updateCurrentSlide('title', e.target.value)}
-                        className={`font-serif-title font-bold text-base sm:text-xl ${themeStyle.text} bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none flex-1`}
-                      />
-                    </div>
-
-                    <div className={`flex-1 rounded-xl p-4 ${themeStyle.card} border flex flex-col justify-center`}>
-                      <textarea
-                        rows={7}
-                        value={currentSlide?.content || ''}
-                        onChange={(e) => updateCurrentSlide('content', e.target.value)}
-                        className={`w-full h-full bg-transparent text-xs sm:text-sm ${themeStyle.text} leading-relaxed focus:outline-none resize-none font-medium`}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Slide Number footer */}
-                <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2">
-                  <span>{template}</span>
-                  <span>
-                    Slide {currentSlideIndex + 1} / {slides.length}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Slide Navigation Buttons */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+          {/* Center: Slide Preview & Canvas (6 cols desktop, full mobile if mobileTab === 'slide') */}
+          <div
+            className={`p-3 sm:p-5 flex flex-col justify-between overflow-y-auto ${
+              mobileTab === 'slide' ? 'md:col-span-6 block' : 'hidden md:block md:col-span-6'
+            }`}
+          >
+            {/* Slide Navigation Header for Mobile & Desktop */}
+            <div className="flex items-center justify-between mb-3 text-xs">
               <button
                 onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                 disabled={currentSlideIndex === 0}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 disabled:opacity-30 flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 flex items-center gap-1 active:scale-95 font-semibold"
               >
-                <ChevronLeft className="w-4 h-4" /> Slide Sebelumnya
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Sebelumnya</span>
               </button>
 
-              <span className="text-xs text-slate-400 font-medium">
+              <span className="font-bold text-xs text-amber-400">
                 Slide {currentSlideIndex + 1} dari {slides.length}
               </span>
 
               <button
                 onClick={() => setCurrentSlideIndex(Math.min(slides.length - 1, currentSlideIndex + 1))}
                 disabled={currentSlideIndex === slides.length - 1}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 disabled:opacity-30 flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 flex items-center gap-1 active:scale-95 font-semibold"
               >
-                Slide Berikutnya <ChevronRight className="w-4 h-4" />
+                <span className="hidden sm:inline">Berikutnya</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Slide Canvas */}
+            <div
+              className={`w-full ${
+                aspectRatio === '16:9' ? 'aspect-video' : 'aspect-4/3'
+              } rounded-2xl ${themeStyle.bg} border border-slate-700/80 shadow-2xl p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden transition-all`}
+            >
+              <div className="absolute top-3 right-4 opacity-20 text-2xl font-cinzel">✝</div>
+
+              {currentSlideIndex === 0 || currentSlide?.slide_type === 'title' ? (
+                // Title slide
+                <div className="my-auto text-center space-y-3">
+                  <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${themeStyle.accent}`}>
+                    CHRISTIAN SERMON BUILDER
+                  </span>
+                  <input
+                    type="text"
+                    value={currentSlide?.title || ''}
+                    onChange={(e) => updateCurrentSlide('title', e.target.value)}
+                    className={`w-full font-serif-title text-lg sm:text-2xl md:text-3xl font-bold ${themeStyle.text} text-center bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none`}
+                  />
+                  <div className={`w-12 h-1 ${themeStyle.line} mx-auto rounded-full`} />
+                  <textarea
+                    rows={3}
+                    value={currentSlide?.content || ''}
+                    onChange={(e) => updateCurrentSlide('content', e.target.value)}
+                    className={`w-full text-xs sm:text-sm ${themeStyle.subtext} text-center bg-transparent border border-transparent hover:border-slate-500/40 rounded-lg p-1 focus:outline-none resize-none`}
+                  />
+                </div>
+              ) : (
+                // Content slide
+                <div className="space-y-3 h-full flex flex-col">
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-slate-700/40">
+                    <div className={`w-1 h-5 ${themeStyle.line} rounded-full`} />
+                    <input
+                      type="text"
+                      value={currentSlide?.title || ''}
+                      onChange={(e) => updateCurrentSlide('title', e.target.value)}
+                      className={`font-serif-title font-bold text-sm sm:text-lg ${themeStyle.text} bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none flex-1`}
+                    />
+                  </div>
+
+                  <div className={`flex-1 rounded-xl p-3 sm:p-4 ${themeStyle.card} border flex flex-col justify-center`}>
+                    <textarea
+                      rows={6}
+                      value={currentSlide?.content || ''}
+                      onChange={(e) => updateCurrentSlide('content', e.target.value)}
+                      className={`w-full h-full bg-transparent text-xs sm:text-sm ${themeStyle.text} leading-relaxed focus:outline-none resize-none font-medium`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
+                <span>{template}</span>
+                <span>
+                  Slide {currentSlideIndex + 1} / {slides.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile Horizontal Slide Thumbnails Carousel */}
+            <div className="md:hidden mt-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Semua Slide ({slides.length})</span>
+                <button
+                  onClick={handleAddSlide}
+                  className="text-[10px] font-bold text-amber-400 flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" /> Tambah
+                </button>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                {slides.map((s, idx) => {
+                  const isSelected = idx === currentSlideIndex;
+                  return (
+                    <button
+                      key={s.id || idx}
+                      onClick={() => setCurrentSlideIndex(idx)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap shrink-0 transition-all active:scale-95 ${
+                        isSelected
+                          ? 'bg-amber-500 text-slate-950 font-bold border-amber-500 shadow-2xs'
+                          : 'bg-slate-800 text-slate-300 border-slate-700'
+                      }`}
+                    >
+                      #{idx + 1} {s.title.slice(0, 14)}...
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Right: Speaker Notes Editor (3 cols) */}
-          <div className="md:col-span-3 border-l border-slate-800 bg-slate-900 p-4 flex flex-col justify-between overflow-y-auto">
+          {/* Right: Speaker Notes Editor (3 cols desktop, full mobile if mobileTab === 'notes') */}
+          <div
+            className={`p-4 border-l border-slate-800 bg-slate-900/90 flex flex-col justify-between overflow-y-auto ${
+              mobileTab === 'notes' ? 'md:col-span-3 block' : 'hidden md:block md:col-span-3'
+            }`}
+          >
             <div className="space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b border-slate-800">
                 <FileText className="w-4 h-4 text-amber-400" />
@@ -607,48 +656,113 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
                 </h4>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Teks naskah ini akan tersimpan di dalam fitur <strong>Speaker Notes</strong> PowerPoint asli saat di-download. Hanya terbaca oleh pengkhotbah di layar presenter.
+                Tersimpan di speaker notes PowerPoint asli. Hanya tampak pada layar presenter pengkhotbah.
               </p>
 
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Catatan Pembicara Slide Ini:
+                  Catatan Slide #{currentSlideIndex + 1}:
                 </label>
                 <textarea
-                  rows={12}
+                  rows={10}
                   value={currentSlide?.speaker_notes || ''}
                   onChange={(e) => updateCurrentSlide('speaker_notes', e.target.value)}
-                  placeholder="Tuliskan arahan khotbah, penekanan intonasi, atau naskah lengkap slide ini..."
+                  placeholder="Tuliskan arahan khotbah atau naskah lengkap slide ini..."
                   className="w-full p-3 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 leading-relaxed"
                 />
               </div>
             </div>
-
-            <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 italic">
-              Slide ringkas untuk jemaat, naskah mendalam di speaker notes.
-            </div>
           </div>
+
+          {/* Mobile-only Style Tab Content */}
+          {mobileTab === 'style' && (
+            <div className="md:hidden p-4 bg-slate-900/95 space-y-4 overflow-y-auto">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-2">Pilih Template Slide</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {TEMPLATES.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTemplate(t)}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold text-left ${
+                        template === t
+                          ? 'border-amber-500 bg-amber-500/10 text-amber-300'
+                          : 'border-slate-800 bg-slate-850 text-slate-300'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-2">Palet Warna</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {COLOR_PALETTES.map((cp) => (
+                    <button
+                      key={cp.id}
+                      onClick={() => setColorPalette(cp.id)}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-medium ${
+                        colorPalette === cp.id
+                          ? 'border-amber-500 bg-slate-800 text-amber-300'
+                          : 'border-slate-800 bg-slate-850 text-slate-300'
+                      }`}
+                    >
+                      <span className={`w-4 h-4 rounded-full ${cp.bgClass} border border-slate-600`} />
+                      <span className="truncate">{cp.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-2">Font Tipografi</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {FONTS.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setFont(f)}
+                      className={`p-2.5 rounded-xl border text-xs font-medium text-left ${
+                        font === f
+                          ? 'border-amber-500 bg-slate-800 text-amber-300'
+                          : 'border-slate-800 bg-slate-850 text-slate-300'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Footer info bar */}
-        <div className="p-3 bg-slate-950 border-t border-slate-800 flex flex-wrap items-center justify-between text-xs text-slate-400">
-          <span>
-            Kompatibel dengan: <strong>Microsoft PowerPoint</strong>, <strong>Google Slides</strong>, <strong>Apple Keynote</strong>, <strong>LibreOffice</strong>.
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                const outlineText = slides.map((s, i) => `Slide ${i+1}: ${s.title}\n${s.content}\nNotes: ${s.speaker_notes}`).join('\n\n');
-                navigator.clipboard.writeText(outlineText);
-                setCopySuccess(true);
-                setTimeout(() => setCopySuccess(false), 2000);
-              }}
-              className="text-amber-400 hover:underline flex items-center gap-1 font-medium"
-            >
-              {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              Salin Naskah Slide
-            </button>
-          </div>
+        {/* Modal Footer */}
+        <div className="p-3 sm:p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
+          <button
+            onClick={() => {
+              const outlineText = slides
+                .map((s, i) => `Slide ${i + 1}: ${s.title}\n${s.content}\nNotes: ${s.speaker_notes}`)
+                .join('\n\n');
+              navigator.clipboard.writeText(outlineText);
+              setCopySuccess(true);
+              setTimeout(() => setCopySuccess(false), 2000);
+            }}
+            className="text-amber-400 hover:underline flex items-center gap-1 font-semibold active:scale-95"
+          >
+            {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>Salin Naskah Slide</span>
+          </button>
+
+          <button
+            onClick={handleDownloadPptx}
+            disabled={isExporting}
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md active:scale-95"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isExporting ? 'Mengekspor...' : 'Download .PPTX'}</span>
+          </button>
         </div>
       </div>
     </div>

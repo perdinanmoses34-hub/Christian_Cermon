@@ -26,71 +26,71 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowI
   return (
     <div className="bg-stone-50 min-h-screen">
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white pt-20 pb-28 px-4 sm:px-6 lg:px-8 border-b border-amber-500/20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white pt-10 sm:pt-20 pb-16 sm:pb-28 px-4 sm:px-6 lg:px-8 border-b border-amber-500/20">
         {/* Subtle decorative background light & cross pattern */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold tracking-wide uppercase mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] sm:text-xs font-semibold tracking-wide uppercase mb-4 sm:mb-6 shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
             Asisten Khotbah Berbasis Teologi Alkitabiah
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif-title font-bold tracking-tight text-white leading-tight sm:leading-tight mb-6">
+          <h1 className="text-2xl sm:text-5xl lg:text-6xl font-serif-title font-bold tracking-tight text-white leading-snug sm:leading-tight mb-4 sm:mb-6">
             Buat Khotbah yang <span className="text-amber-400 underline decoration-amber-500/40 decoration-wavy underline-offset-8">Sistematis</span>, Alkitabiah, dan Relevan dengan Bantuan AI
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-10">
+          <p className="text-sm sm:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-6 sm:mb-10">
             Masukkan tema dan ayat Alkitab, pilih metode khotbah, dan biarkan AI membantu menyusun khotbah lengkap serta presentasi PowerPoint siap mimbar.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <button
               onClick={onStartNow}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-base shadow-xl shadow-amber-900/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm sm:text-base shadow-xl shadow-amber-900/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
             >
-              <Sparkles className="w-5 h-5" />
-              Buat Khotbah Sekarang
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Buat Khotbah Sekarang</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={onOpenHowItWorks}
-              className="w-full sm:w-auto px-7 py-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-base transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <BookOpen className="w-5 h-5 text-amber-400" />
-              Lihat Cara Kerja
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+              <span>Lihat Cara Kerja</span>
             </button>
           </div>
 
           {/* Value Props Bar */}
-          <div className="mt-14 pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-amber-400 shrink-0" />
-              <span className="text-xs text-slate-300 font-medium">8 Metode Homiletika Valid</span>
+          <div className="mt-8 sm:mt-14 pt-6 sm:pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-left">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">8 Metode Homiletika</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-amber-400 shrink-0" />
-              <span className="text-xs text-slate-300 font-medium">PowerPoint .PPTX Otomatis</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">PowerPoint .PPTX</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-amber-400 shrink-0" />
-              <span className="text-xs text-slate-300 font-medium">Integritas Konteks Alkitab</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">Integritas Alkitabiah</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-amber-400 shrink-0" />
-              <span className="text-xs text-slate-300 font-medium">Speaker Notes Siap Mimbar</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">Speaker Notes Mimbar</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* PRODUCT PREVIEW SHOWCASE */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 -mt-16 relative z-20">
+      <section className="max-w-6xl mx-auto px-3 sm:px-6 -mt-8 sm:-mt-16 relative z-20">
         <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden p-3 sm:p-5">
           <div className="bg-slate-950 rounded-xl border border-slate-800/80 p-6 text-slate-100">
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">

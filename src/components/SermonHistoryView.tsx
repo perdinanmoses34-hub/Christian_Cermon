@@ -12,6 +12,8 @@ import {
   FileEdit,
   Plus,
   Filter,
+  X,
+  MoreVertical,
 } from 'lucide-react';
 import { Sermon, PreachingMethod } from '../types/sermon';
 import { exportToPowerPoint } from '../services/pptxExporter';
@@ -36,6 +38,7 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
   const [search, setSearch] = useState('');
   const [filterMethod, setFilterMethod] = useState<string>('all');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [actionMenuOpenId, setActionMenuOpenId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return sermons.filter((s) => {
@@ -60,6 +63,7 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
       console.error(err);
     } finally {
       setDownloadingId(null);
+      setActionMenuOpenId(null);
     }
   };
 
@@ -76,29 +80,29 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-serif-title font-bold text-slate-900">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-serif-title font-bold text-slate-900 tracking-tight">
             Koleksi Khotbah Saya
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Arsip lengkap naskah khotbah yang pernah Anda persiapkan bersama asisten AI.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Arsip naskah khotbah yang pernah Anda persiapkan ({filtered.length} khotbah).
           </p>
         </div>
 
         <button
           onClick={onCreateNew}
-          className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
+          className="w-full sm:w-auto px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
-          + Buat Khotbah Baru
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Buat Khotbah Baru</span>
         </button>
       </div>
 
       {/* Filter Tabs & Search */}
-      <div className="bg-white rounded-xl border border-stone-200 p-4 space-y-3 shadow-sm">
+      <div className="bg-white rounded-2xl border border-stone-200/90 p-3 sm:p-4 space-y-2.5 shadow-2xs">
         {/* Search */}
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -106,21 +110,29 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search sermons by title, scripture, or theme..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-lg focus:bg-white focus:outline-none focus:border-amber-500 text-slate-800"
+            placeholder="Cari judul, perikop ayat, atau tema..."
+            className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-800"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-2.5 p-0.5 text-slate-400 hover:text-slate-700"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* Method filter pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        {/* Method filter pills: horizontal scrolling */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
           {methodsList.map((m) => (
             <button
               key={m.id}
               onClick={() => setFilterMethod(m.id)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-colors active:scale-95 ${
                 filterMethod === m.id
-                  ? 'bg-slate-900 text-amber-400 font-bold'
-                  : 'bg-stone-100 hover:bg-stone-200 text-slate-600'
+                  ? 'bg-slate-900 text-amber-400 font-bold shadow-xs'
+                  : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
               }`}
             >
               {m.label}
@@ -129,115 +141,144 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
         </div>
       </div>
 
-      {/* Sermons Table / Cards */}
+      {/* Sermons Cards Grid */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center">
-          <BookOpen className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-          <h3 className="font-bold text-slate-800 text-sm">Tidak Ada Khotbah Ditemukan</h3>
-          <p className="text-xs text-slate-500 mt-1 mb-4">
-            Coba ubah kata kunci pencarian atau buat khotbah baru sekarang.
+        <div className="bg-white rounded-2xl border border-stone-200/90 p-8 sm:p-12 text-center">
+          <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-2.5" />
+          <h3 className="font-bold text-slate-800 text-sm font-serif-title">Tidak Ada Khotbah Ditemukan</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-4 max-w-sm mx-auto">
+            Coba ganti kata kunci pencarian atau buat draf khotbah baru sekarang.
           </p>
           <button
             onClick={onCreateNew}
-            className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs"
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs active:scale-95 shadow-xs"
           >
             Buat Khotbah Sekarang
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((s) => {
             const dateStr = new Date(s.created_at).toLocaleDateString('id-ID', {
               day: 'numeric',
               month: 'short',
               year: 'numeric',
             });
+            const isMenuOpen = actionMenuOpenId === s.id;
 
             return (
               <div
                 key={s.id}
                 onClick={() => onOpenSermon(s)}
-                className="bg-white rounded-xl border border-stone-200 hover:border-amber-400 p-5 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                className="bg-white rounded-2xl border border-stone-200/90 hover:border-amber-400 p-4 sm:p-5 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group active:scale-[0.99] relative"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/80">
                       {s.method}
                     </span>
-                    <span className="text-xs font-semibold text-slate-700 bg-stone-100 px-2 py-0.5 rounded">
+                    <span className="text-xs font-bold text-slate-800 bg-stone-100 px-2.5 py-0.5 rounded-lg border border-stone-200/60">
                       {s.main_scripture}
                     </span>
                   </div>
 
-                  <h3 className="font-serif-title font-bold text-base text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-2">
+                  <h3 className="font-serif-title font-bold text-sm sm:text-base text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-2">
                     {s.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                  <p className="text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">
                     {s.big_idea || s.introduction}
                   </p>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-stone-100 space-y-3">
+                <div className="pt-3 mt-3 border-t border-stone-100 space-y-2.5">
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      <span className="capitalize">{s.audience.replace('_', ' ')}</span>
+                    <span className="flex items-center gap-1 truncate max-w-[120px]">
+                      <Users className="w-3 h-3 shrink-0" />
+                      <span className="capitalize truncate">{s.audience.replace('_', ' ')}</span>
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                      <Clock className="w-3 h-3 shrink-0" />
                       {s.duration}
                     </span>
                     <span>{dateStr}</span>
                   </div>
 
-                  {/* Actions */}
+                  {/* Android-ergonomic Action Row */}
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center justify-between pt-1"
+                    className="flex items-center justify-between pt-1 gap-2"
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 flex-1">
                       <button
                         onClick={() => onOpenSermon(s)}
-                        className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-medium flex items-center gap-1"
+                        className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
                       >
-                        <FileEdit className="w-3 h-3" /> Buka
+                        <FileEdit className="w-3.5 h-3.5" />
+                        <span>Buka</span>
                       </button>
+
                       <button
                         onClick={() => onOpenPowerPoint(s)}
-                        className="px-2.5 py-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 text-[11px] font-medium flex items-center gap-1 border border-amber-300"
+                        className="py-2 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 border border-amber-300/80 active:scale-95 transition-transform"
                       >
-                        <Presentation className="w-3 h-3" /> Slides
+                        <Presentation className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Slide PPT</span>
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    {/* Quick Overflow Menu for secondary actions */}
+                    <div className="relative">
                       <button
-                        onClick={(e) => handleDownloadPptx(e, s)}
-                        disabled={downloadingId === s.id}
-                        title="Download .PPTX"
-                        className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-stone-100"
+                        onClick={() => setActionMenuOpenId(isMenuOpen ? null : s.id)}
+                        className="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-600 active:scale-95 transition-transform"
+                        title="Menu Lainnya"
+                        aria-label="Menu Lainnya"
                       >
-                        <FileDown className="w-3.5 h-3.5" />
+                        <MoreVertical className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => onDuplicateSermon(s)}
-                        title="Duplikat"
-                        className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-stone-100"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Hapus khotbah "${s.title}"?`)) {
-                            onDeleteSermon(s.id);
-                          }
-                        }}
-                        title="Hapus"
-                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+
+                      {isMenuOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-30"
+                            onClick={() => setActionMenuOpenId(null)}
+                          />
+                          <div className="absolute right-0 bottom-full mb-1.5 w-48 bg-white rounded-2xl shadow-xl border border-stone-200 py-1.5 z-40 text-xs animate-scaleIn">
+                            <button
+                              onClick={(e) => handleDownloadPptx(e, s)}
+                              disabled={downloadingId === s.id}
+                              className="w-full px-3 py-2 text-left hover:bg-stone-100 text-slate-700 flex items-center gap-2 font-medium"
+                            >
+                              <FileDown className="w-4 h-4 text-slate-500" />
+                              <span>{downloadingId === s.id ? 'Mengunduh...' : 'Download .PPTX'}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                onDuplicateSermon(s);
+                                setActionMenuOpenId(null);
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-stone-100 text-slate-700 flex items-center gap-2 font-medium"
+                            >
+                              <Copy className="w-4 h-4 text-slate-500" />
+                              <span>Duplikasi Khotbah</span>
+                            </button>
+                            <div className="border-t border-stone-100 my-1" />
+                            <button
+                              onClick={() => {
+                                setActionMenuOpenId(null);
+                                if (confirm(`Apakah Anda yakin ingin menghapus "${s.title}"?`)) {
+                                  onDeleteSermon(s.id);
+                                }
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-rose-50 text-rose-600 flex items-center gap-2 font-medium"
+                            >
+                              <Trash2 className="w-4 h-4 text-rose-500" />
+                              <span>Hapus Khotbah</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

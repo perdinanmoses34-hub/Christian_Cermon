@@ -19,18 +19,15 @@ export const SubscriptionPaywallModal: React.FC<SubscriptionPaywallModalProps> =
 }) => {
   if (!isOpen) return null;
 
-  const handleWhatsAppClick = () => {
-    const message = encodeURIComponent(
-      `Shalom Admin Christian Sermon Builder,\n\nSaya ingin berlangganan paket Premium untuk membuka fitur "${featureName}".\nAkun Email: ${userEmail}\n\nMohon info aktivasi dan konfirmasi pembayaran. Terima kasih!`
-    );
-    window.open(`https://wa.me/${paymentInfo.whatsappContact.replace(/\D/g, '')}?text=${message}`, '_blank');
-  };
+  const whatsappUrl = `https://wa.me/${paymentInfo.whatsappContact.replace(/\D/g, '')}?text=${encodeURIComponent(
+    `Shalom Admin Christian Sermon Builder,\n\nSaya ingin berlangganan paket Premium untuk membuka fitur "${featureName}".\nAkun Email: ${userEmail}\n\nMohon info aktivasi dan konfirmasi pembayaran. Terima kasih!`
+  )}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden transform transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn safe-area-bottom">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden transform transition-all max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 p-6 sm:p-7 text-white text-center">
+        <div className="relative bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 p-5 sm:p-7 text-white text-center shrink-0">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
@@ -38,8 +35,8 @@ export const SubscriptionPaywallModal: React.FC<SubscriptionPaywallModalProps> =
             <X className="w-5 h-5" />
           </button>
 
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 mb-3 shadow-lg shadow-amber-900/40">
-            <Crown className="w-7 h-7" />
+          <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 mb-2.5 shadow-lg shadow-amber-900/40">
+            <Crown className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold mb-2">
@@ -47,7 +44,7 @@ export const SubscriptionPaywallModal: React.FC<SubscriptionPaywallModalProps> =
             Fitur Khusus Berlangganan
           </div>
 
-          <h3 className="text-xl sm:text-2xl font-serif-title font-bold text-white">
+          <h3 className="text-lg sm:text-2xl font-serif-title font-bold text-white">
             Buka Akses: {featureName}
           </h3>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-md mx-auto leading-relaxed">
@@ -56,9 +53,9 @@ export const SubscriptionPaywallModal: React.FC<SubscriptionPaywallModalProps> =
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-5 text-slate-800 text-xs sm:text-sm">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 text-slate-800 text-xs sm:text-sm overflow-y-auto flex-1">
           {/* Benefit items */}
-          <div className="space-y-2.5 bg-stone-50 p-4 rounded-2xl border border-stone-200">
+          <div className="space-y-2 bg-stone-50 p-3.5 sm:p-4 rounded-2xl border border-stone-200">
             <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
               Keuntungan Berlangganan Premium:
             </h4>
@@ -106,13 +103,15 @@ export const SubscriptionPaywallModal: React.FC<SubscriptionPaywallModalProps> =
 
           {/* Action Buttons */}
           <div className="space-y-2 pt-2">
-            <button
-              onClick={handleWhatsAppClick}
-              className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 active:scale-95 transition-all cursor-pointer text-center"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Konfirmasi / Aktifkan via WhatsApp Admin</span>
-            </button>
+            </a>
 
             <button
               onClick={onClose}
