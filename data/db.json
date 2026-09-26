@@ -1,0 +1,154 @@
+{
+  "users": [
+    {
+      "id": "user-demo-1",
+      "name": "Pdt. David Christian",
+      "email": "david@gereja.id",
+      "church_name": "Gereja Kristen Indonesia"
+    }
+  ],
+  "sermons": [
+    {
+      "id": "sermon-1",
+      "user_id": "user-demo-1",
+      "title": "Hidup Dalam Iman yang Sejati",
+      "theme": "Hidup Dalam Iman",
+      "main_scripture": "Ibrani 11:1-6",
+      "supporting_scriptures": [
+        "Roma 10:17",
+        "2 Korintus 5:7",
+        "Yakobus 2:17"
+      ],
+      "objective": "Jemaat memahami hakikat iman alkitabiah, membuang kepalsuan iman pasif, dan berani melangkah dalam ketaatan konkret setiap hari.",
+      "method": "ekspositori",
+      "audience": "dewasa",
+      "duration": "30 menit",
+      "language": "id",
+      "style": {
+        "languageStyle": "Pastoral",
+        "theologicalToPractical": 65,
+        "seriousToRelaxed": 35
+      },
+      "big_idea": "Iman yang sejati bukan sekadar persetujuan akal tentang keberadaan Allah, melainkan penyerahan diri seutuhnya yang dibuktikan lewat ketaatan firman di tengah ketidakpastian.",
+      "introduction": "Pernahkah Anda berdiri di tepi keputusan besar di mana setiap kalkulasi manusia berkata \"tidak\", tetapi suara firman Tuhan membimbing Anda untuk melangkah? Hari ini kita akan menyelidiki bagaimana iman yang sejati bekerja dan memampukan kita hidup berkenan kepada Allah.",
+      "context": "Surat Ibrani ditulis kepada orang-orang Kristen Yahudi abad pertama yang menghadapi tekanan penganiayaan, keletihan rohani, dan godaan untuk kembali ke sistem hukum Taurat.",
+      "text_explanation": "Dalam ayat 1, penulis memberikan deskripsi fungsional tentang iman: dasar yang kokoh dari segala yang kita harapkan dan bukti dari segala yang tidak kita lihat.",
+      "main_points": [
+        {
+          "id": "point-1",
+          "title": "Iman Memandang Janji Allah Lebih Nyata daripada Kenyataan Tampak",
+          "biblical_basis": [
+            "Ibrani 11:1",
+            "2 Korintus 5:7"
+          ],
+          "explanation": "Iman bukan angan-angan positif atau optimisme psikologis. Iman alkitabiah berakar pada tabiat Allah yang setia.",
+          "interpretation": "Penulis Ibrani memperlengkapi orang percaya agar memiliki sauh jiwa saat menghadapi ancaman penderitaan.",
+          "illustration": "Seperti seorang anak kecil yang melompat ke pelukan ayahnya tanpa ragu karena mengenal kekuatan tangan sang ayah.",
+          "application": "Pilihlah untuk menundukkan ketakutan Anda di bawah kekuasaan firman Tuhan yang tidak pernah berubah.",
+          "transition": "Namun, iman yang kokoh ini tidak pernah berhenti pada perasaan damai semata; iman sejati menuntut ketaatan."
+        },
+        {
+          "id": "point-2",
+          "title": "Iman Mendorong Ketaatan Nyata dalam Tindakan Sehari-hari",
+          "biblical_basis": [
+            "Ibrani 11:4",
+            "Ibrani 11:6",
+            "Yakobus 2:17"
+          ],
+          "explanation": "Setiap tokoh dalam Ibrani 11 digambarkan dengan kata kerja tindakan: Habel mempersembahkan, Nuh membangun bahtera, Abraham berangkat.",
+          "interpretation": "Henokh diperkenan Allah karena ia setia berjalan bersama Allah di tengah generasi yang fasik.",
+          "illustration": "Sebuah tiket kereta api tidak berguna jika hanya disimpan di dompet; tiket itu baru bermakna saat kita naik ke gerbong kereta.",
+          "application": "Ambillah satu langkah ketaatan minggu ini: mengampuni orang yang melukai Anda atau memulai doa keluarga.",
+          "transition": "Lantas, apa yang memberi kita kekuatan untuk terus taat?"
+        },
+        {
+          "id": "point-3",
+          "title": "Iman Percaya Bahwa Allah Adalah Pemberi Upah Kekal",
+          "biblical_basis": [
+            "Ibrani 11:6",
+            "Roma 8:18"
+          ],
+          "explanation": "Ayat 6 menyatakan bahwa Allah memberi upah kepada mereka yang sungguh-sungguh mencari Dia.",
+          "interpretation": "Kepemilikan sejati yang abadi ada di surga.",
+          "illustration": "Atlet maraton yang menjaga fokus pada garis akhir.",
+          "application": "Tetaplah teguh melayani dan berbuat benar, sebab jerih payah Anda dalam Tuhan tidak pernah sia-sia.",
+          "transition": "Maka dari itu, mari kita rangkum seluruh kebenaran firman ini."
+        }
+      ],
+      "reflection_questions": [
+        "Di area manakah dalam hidup Anda yang paling sering dikuasai kekhawatiran daripada iman?",
+        "Langkah ketaatan konkret apa yang Roh Kudus bisikkan untuk Anda ambil hari ini?"
+      ],
+      "call_to_action": "Hari ini, serahkan satu ketakutan terbesar Anda, pegang firman-Nya, dan mulailah melangkah dalam iman!",
+      "conclusion": "Iman bukanlah ketiadaan masalah, melainkan kehadiran Allah yang berdaulat dalam setiap keadaan.",
+      "closing_prayer": "Bapa di surga, teguhkan iman kami agar kami berani melangkah dalam ketaatan firman-Mu setiap hari. Dalam nama Tuhan Yesus kami berdoa. Amin.",
+      "powerpoint": {
+        "template": "Modern Church",
+        "colorPalette": "navy",
+        "font": "Inter",
+        "aspectRatio": "16:9",
+        "slides": [
+          {
+            "id": "slide-1",
+            "title": "Hidup Dalam Iman yang Sejati",
+            "content": "Ibrani 11:1-6\nSeri Pembinaan Rohani Jemaat",
+            "speaker_notes": "Sampaikan salam hangat kepada jemaat dan perkenalkan tema khotbah dengan antusias.",
+            "slide_type": "title"
+          },
+          {
+            "id": "slide-2",
+            "title": "Ayat Alkitab Utama",
+            "content": "\"Iman adalah dasar dari segala sesuatu yang kita harapkan dan bukti dari segala sesuatu yang tidak kita lihat.\"\n\n— Ibrani 11:1",
+            "speaker_notes": "Ajak jemaat membuka Alkitab dan membaca bersama ayat 1.",
+            "slide_type": "scripture"
+          },
+          {
+            "id": "slide-3",
+            "title": "Gagasan Utama (Big Idea)",
+            "content": "Iman yang sejati bukan sekadar persetujuan akal tentang keberadaan Allah, melainkan penyerahan diri seutuhnya yang dibuktikan lewat ketaatan firman.",
+            "speaker_notes": "Ulangi kalimat Big Idea dua kali dengan intonasi jelas.",
+            "slide_type": "big_idea"
+          },
+          {
+            "id": "slide-4",
+            "title": "Poin 1: Janji Allah Nyata",
+            "content": "• Hupostasis: Sertifikat kepemilikan sah janji Allah.\n• Elenchos: Keyakinan batin yang mengalahkan keraguan.\n• 2 Korintus 5:7: Berjalan karena percaya, bukan melihat.",
+            "speaker_notes": "Jelaskan analogi sertifikat kepemilikan saham/tanah.",
+            "slide_type": "point"
+          },
+          {
+            "id": "slide-5",
+            "title": "Poin 2: Ketaatan Nyata",
+            "content": "• Iman sejati selalu melahirkan tindakan konkret.\n• Para tokoh iman purba melangkah dan bergerak.\n• Yakobus 2:17: Iman tanpa perbuatan adalah mati.",
+            "speaker_notes": "Sampaikan ilustrasi anak melompat ke pelukan sang ayah.",
+            "slide_type": "point"
+          },
+          {
+            "id": "slide-6",
+            "title": "Poin 3: Upah Kekal Allah",
+            "content": "• Allah adalah Misthapodotes (Pemberi Upah).\n• Upah tertinggi adalah persekutuan dengan Allah sendiri.\n• Menghadapi pergumulan dengan pengharapan kekal.",
+            "speaker_notes": "Kuatkan jemaat yang sedang bergumul dalam kerugian materi demi integritas.",
+            "slide_type": "point"
+          },
+          {
+            "id": "slide-7",
+            "title": "Penerapan & Ajakan",
+            "content": "• Pribadi: Menundukkan kekhawatiran di bawah firman.\n• Keluarga: Menghidupkan mezbah doa.\n• Pekerjaan: Menjaga integritas tanpa kompromi.",
+            "speaker_notes": "Ajak jemaat mengambil komitmen nyata hari ini.",
+            "slide_type": "application"
+          },
+          {
+            "id": "slide-8",
+            "title": "Doa Penutup",
+            "content": "\"Tuhan, mampukan kami melangkah dalam iman dan ketaatan kepada-Mu setiap hari. Amin.\"",
+            "speaker_notes": "Pimpin doa syafaat dan penyerahan komitmen jemaat.",
+            "slide_type": "prayer"
+          }
+        ]
+      },
+      "status": "completed",
+      "created_at": "2026-09-26T05:08:37.212Z",
+      "updated_at": "2026-09-26T05:08:37.212Z"
+    }
+  ]
+}
