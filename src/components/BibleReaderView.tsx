@@ -147,14 +147,14 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
             </div>
 
             {/* Quick perikop navigation pills */}
-            <div>
+            <div className="w-full sm:w-auto">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                 Perikop Pilihan Cepat
               </label>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
                 {[
                   { label: 'Ibrani 11 (Iman)', book: 'ibrani', ch: 11 },
-                  { label: 'Yohanes 3 (Kasih Allah)', book: 'yohanes', ch: 3 },
+                  { label: 'Yohanes 3 (Kasih)', book: 'yohanes', ch: 3 },
                   { label: 'Yohanes 1 (Firman)', book: 'yohanes', ch: 1 },
                   { label: 'Yohanes 15 (Pokok Anggur)', book: 'yohanes', ch: 15 },
                   { label: 'Mazmur 23 (Gembala)', book: 'mazmur', ch: 23 },
@@ -166,7 +166,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
                       setSelectedBookId(item.book);
                       setSelectedChapter(item.ch);
                     }}
-                    className={`px-2.5 py-1 text-[11px] font-medium rounded-lg border whitespace-nowrap transition-colors ${
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-lg border whitespace-nowrap shrink-0 transition-colors ${
                       selectedBookId === item.book && selectedChapter === item.ch
                         ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
                         : 'bg-stone-100 text-slate-700 border-stone-200 hover:bg-stone-200'

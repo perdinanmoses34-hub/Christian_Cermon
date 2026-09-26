@@ -363,12 +363,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   {/* Actions Buttons */}
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1.5 shrink-0 self-end lg:self-center"
+                    className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto pt-3 lg:pt-0 border-t border-stone-100 lg:border-t-0 justify-end"
                   >
                     <button
                       onClick={() => onOpenSermon(sermon)}
                       title="Buka / Edit Khotbah"
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-1.5 transition-colors shadow-sm"
                     >
                       <FileEdit className="w-3.5 h-3.5" />
                       <span>Buka</span>
@@ -377,10 +377,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <button
                       onClick={() => onOpenPowerPoint(sermon)}
                       title="Lihat / Generate PowerPoint"
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300/80 flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300/80 flex items-center gap-1.5 transition-colors"
                     >
                       <Presentation className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">PowerPoint</span>
+                      <span>Slide PPT</span>
                     </button>
 
                     <button

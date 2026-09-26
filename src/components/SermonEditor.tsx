@@ -39,6 +39,7 @@ export const SermonEditor: React.FC<SermonEditorProps> = ({
 }) => {
   const [sermon, setSermon] = useState<Sermon>(initialSermon);
   const [activeSection, setActiveSection] = useState<string>('big_idea');
+  const [mobileTab, setMobileTab] = useState<'editor' | 'outline' | 'ai'>('editor');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
   const [showFullVerseText, setShowFullVerseText] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -291,38 +292,38 @@ Christian Sermon Builder | Soli Deo Gloria`;
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
       {/* Top Header Bar */}
-      <header className="bg-slate-900 border-b border-slate-800 text-white px-4 sm:px-6 py-3 sticky top-16 z-30 shadow-md">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+      <header className="bg-slate-900 border-b border-slate-800 text-white px-3 sm:px-6 py-2.5 sm:py-3 sticky top-14 sm:top-16 z-30 shadow-md">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={onBackToDashboard}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors shrink-0"
               title="Kembali ke Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={sermon.title}
                   onChange={(e) => updateField('title', e.target.value)}
-                  className="font-serif-title font-bold text-base sm:text-lg bg-transparent border-b border-transparent hover:border-slate-600 focus:border-amber-400 focus:outline-none text-white max-w-sm sm:max-w-md"
+                  className="font-serif-title font-bold text-sm sm:text-base md:text-lg bg-transparent border-b border-transparent hover:border-slate-600 focus:border-amber-400 focus:outline-none text-white w-full max-w-[150px] sm:max-w-xs md:max-w-md truncate"
                 />
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 truncate">
                 <span className="text-amber-400 font-semibold">{sermon.main_scripture}</span>
                 <span>•</span>
-                <span className="capitalize">{sermon.method}</span>
-                <span>•</span>
+                <span className="capitalize hidden sm:inline">{sermon.method}</span>
+                <span className="hidden sm:inline">•</span>
                 <span>{sermon.duration}</span>
               </div>
             </div>
           </div>
 
           {/* Status & Actions */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/80 text-xs text-slate-300 mr-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800/80 text-[11px] text-slate-300">
               <span
                 className={`w-2 h-2 rounded-full ${
                   saveStatus === 'saved' ? 'bg-emerald-400' : 'bg-amber-400 animate-ping'
@@ -333,18 +334,19 @@ Christian Sermon Builder | Soli Deo Gloria`;
 
             <button
               onClick={() => onOpenOutline(sermon)}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
+              className="hidden md:flex px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium items-center gap-1.5 transition-colors"
             >
               <ListOrdered className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Outline</span>
+              <span>Outline</span>
             </button>
 
             <button
               onClick={() => onOpenPowerPoint(sermon)}
-              className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+              className="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-colors shadow-sm"
             >
               <Presentation className="w-3.5 h-3.5" />
-              <span>Generate PowerPoint</span>
+              <span className="hidden sm:inline">Generate </span>
+              <span>PPT</span>
             </button>
 
             <button
@@ -357,7 +359,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
 
             <button
               onClick={handlePrintSermon}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors hidden sm:block"
               title="Cetak Khotbah"
             >
               <Printer className="w-4 h-4" />
@@ -366,10 +368,44 @@ Christian Sermon Builder | Soli Deo Gloria`;
         </div>
       </header>
 
+      {/* Mobile 3-Tab Bar for Phones */}
+      <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-2 py-2 flex items-center justify-around gap-1 sticky top-28 sm:top-30 z-20 shadow-md">
+        <button
+          onClick={() => setMobileTab('editor')}
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-colors ${
+            mobileTab === 'editor'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'text-slate-300 hover:bg-slate-850'
+          }`}
+        >
+          📝 Naskah
+        </button>
+        <button
+          onClick={() => setMobileTab('outline')}
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-colors ${
+            mobileTab === 'outline'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'text-slate-300 hover:bg-slate-850'
+          }`}
+        >
+          📋 Daftar Isi
+        </button>
+        <button
+          onClick={() => setMobileTab('ai')}
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-colors ${
+            mobileTab === 'ai'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'text-slate-300 hover:bg-slate-850'
+          }`}
+        >
+          ✨ Asisten AI
+        </button>
+      </div>
+
       {/* Main 3-Column Workspace */}
-      <div className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
         {/* LEFT COLUMN: Section Navigation (3 cols) */}
-        <aside className="lg:col-span-3 space-y-4">
+        <aside className={`lg:col-span-3 space-y-4 ${mobileTab === 'outline' ? 'block' : 'hidden lg:block'}`}>
           <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 sticky top-36">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100 mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -527,7 +563,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
         </aside>
 
         {/* CENTER COLUMN: Section Editor (6 cols) */}
-        <main className="lg:col-span-6 space-y-5">
+        <main className={`lg:col-span-6 space-y-5 ${mobileTab === 'editor' ? 'block' : 'hidden lg:block'}`}>
           {/* Biblical Integrity Disclaimer Box */}
           <div className="bg-amber-50/70 border border-amber-200/90 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
@@ -919,7 +955,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
         </main>
 
         {/* RIGHT COLUMN: AI Assistant (3 cols) */}
-        <aside className="lg:col-span-3 space-y-4">
+        <aside className={`lg:col-span-3 space-y-4 ${mobileTab === 'ai' ? 'block' : 'hidden lg:block'}`}>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white shadow-xl sticky top-36">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-800 mb-3">
               <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center">

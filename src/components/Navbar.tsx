@@ -24,25 +24,25 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
         {/* Brand / Logo */}
         <div
           onClick={() => onNavigate(currentUser ? 'dashboard' : 'landing')}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
         >
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-900/30 group-hover:scale-105 transition-transform">
-            <BookOpen className="w-5 h-5 text-slate-950 font-bold" />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-900/30 group-hover:scale-105 transition-transform shrink-0">
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950 font-bold" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-cinzel font-bold text-lg tracking-wider text-white">
-                CHRISTIAN SERMON
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="font-cinzel font-bold text-sm sm:text-lg tracking-wider text-white">
+                <span className="hidden sm:inline">CHRISTIAN </span>SERMON
               </span>
-              <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 tracking-wider">
+              <span className="text-[10px] sm:text-xs font-semibold px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 tracking-wider">
                 AI
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-light tracking-wide -mt-0.5">
+            <p className="hidden sm:block text-[11px] text-slate-400 font-light tracking-wide -mt-0.5">
               Sistematis • Alkitabiah • Relevan
             </p>
           </div>

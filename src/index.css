@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    -webkit-tap-highlight-color: transparent;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
@@ -12,6 +15,15 @@
   .font-cinzel {
     font-family: 'Cinzel', Georgia, serif;
   }
+}
+
+/* Hide scrollbar for mobile swipe lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Custom scrollbars for sermon panels */
