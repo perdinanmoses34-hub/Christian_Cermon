@@ -314,12 +314,12 @@ Christian Sermon Builder | Soli Deo Gloria`;
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col pb-safe md:pb-8">
+    <div className="min-h-screen bg-stone-100 flex flex-col pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
       {/* Top App Bar */}
-      <header className="bg-slate-900 border-b border-slate-800 text-white px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 md:top-16 z-30 shadow-md safe-area-top">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <header className="bg-slate-900 border-b border-slate-800 text-white px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 md:top-16 z-30 shadow-md safe-area-top w-full max-w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 w-full min-w-0">
           {/* Left Slot: Back Arrow + Title */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
             <button
               onClick={onBackToDashboard}
               className="w-9 h-9 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-transform shrink-0"
@@ -328,7 +328,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
               <ArrowLeft className="w-5 h-5" />
             </button>
 
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 overflow-hidden">
               <input
                 type="text"
                 value={sermon.title}
@@ -399,7 +399,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
       </header>
 
       {/* Mobile Segmented Tabs Bar: [ Naskah ] [ Poin ] [ Asisten AI ] */}
-      <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-2 py-1.5 flex items-center justify-around gap-1.5 sticky top-[49px] z-20 shadow-xs">
+      <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-2 py-1.5 flex items-center justify-around gap-1.5 sticky top-[49px] z-20 shadow-xs w-full max-w-full">
         <button
           onClick={() => setMobileTab('editor')}
           className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-center transition-all active:scale-95 ${
@@ -433,7 +433,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
       </div>
 
       {/* Main 3-Column Workspace */}
-      <div className="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+      <div className="flex-1 max-w-7xl mx-auto w-full max-w-full p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 min-w-0 overflow-x-hidden">
         {/* LEFT COLUMN: Section Navigation (3 cols) */}
         <aside className={`lg:col-span-3 space-y-4 ${mobileTab === 'outline' ? 'block' : 'hidden lg:block'}`}>
           <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs p-4 sticky top-36">
@@ -627,7 +627,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
         </aside>
 
         {/* CENTER COLUMN: Section Editor (6 cols) */}
-        <main className={`lg:col-span-6 space-y-4 ${mobileTab === 'editor' ? 'block' : 'hidden lg:block'}`}>
+        <main className={`lg:col-span-6 space-y-4 min-w-0 w-full overflow-hidden ${mobileTab === 'editor' ? 'block' : 'hidden lg:block'}`}>
           {/* Quick Pulpit Reading Font Size Bar */}
           <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-stone-200/90 text-xs">
             <span className="text-slate-500 font-medium">Ukuran Teks Mimbar:</span>

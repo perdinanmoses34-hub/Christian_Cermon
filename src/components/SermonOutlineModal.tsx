@@ -125,7 +125,7 @@ export const SermonOutlineModal: React.FC<SermonOutlineModalProps> = ({
   const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn safe-area-top safe-area-bottom w-full max-w-full overflow-hidden">
       <div className="bg-white rounded-none sm:rounded-3xl w-full max-w-3xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col shadow-2xl border-0 sm:border border-stone-200 overflow-hidden">
         {/* Header - Android Material 3 App Bar style */}
         <div className="p-3.5 sm:p-5 border-b border-stone-200 flex items-center justify-between bg-stone-50 shrink-0">

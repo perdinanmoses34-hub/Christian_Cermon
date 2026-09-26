@@ -80,7 +80,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
       {/* Desktop Header Banner */}
       <div className="hidden sm:flex bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-5 sm:p-7 text-white border border-slate-800 shadow-xl flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -196,7 +196,7 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
           <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
             Perikop Pilihan Cepat
           </label>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full">
             {[
               { label: 'Ibrani 11 (Iman)', book: 'ibrani', ch: 11 },
               { label: 'Yohanes 3 (Kasih)', book: 'yohanes', ch: 3 },
@@ -414,28 +414,28 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
               )}
 
               {/* Mobile-only Bottom Action Bar on Verse Card: 3 clean touch buttons */}
-              <div className="flex sm:hidden items-center justify-between gap-1.5 pt-2 border-t border-stone-100">
+              <div className="flex sm:hidden items-center justify-between gap-1.5 pt-2 border-t border-stone-100 w-full">
                 <button
                   onClick={() => handleCopyVerse(v)}
-                  className="flex-1 py-2 px-2 rounded-xl bg-stone-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1 active:scale-95"
+                  className="flex-1 py-2 px-1.5 rounded-xl bg-stone-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 whitespace-nowrap"
                 >
-                  {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> : <Copy className="w-3.5 h-3.5 shrink-0" />}
                   <span>{isCopied ? 'Tersalin' : 'Salin'}</span>
                 </button>
 
                 <button
                   onClick={() => onOpenCommentaryForPassage(verseRef)}
-                  className="flex-1 py-2 px-2 rounded-xl bg-blue-50 text-blue-800 text-xs font-semibold flex items-center justify-center gap-1 border border-blue-200 active:scale-95"
+                  className="flex-1 py-2 px-1.5 rounded-xl bg-blue-50 text-blue-800 text-xs font-semibold flex items-center justify-center gap-1 border border-blue-200 active:scale-95 whitespace-nowrap"
                 >
-                  <BookOpen className="w-3.5 h-3.5" />
+                  <BookOpen className="w-3.5 h-3.5 shrink-0" />
                   <span>Tafsiran</span>
                 </button>
 
                 <button
                   onClick={() => onUseForSermon(verseRef, v.tb)}
-                  className="flex-1 py-2 px-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 shadow-2xs"
+                  className="flex-1 py-2 px-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 shadow-2xs whitespace-nowrap"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
                   <span>Khotbah</span>
                 </button>
               </div>

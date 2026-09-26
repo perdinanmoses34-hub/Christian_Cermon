@@ -211,7 +211,7 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8 pb-32 md:pb-12 animate-fadeIn">
+    <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8 pb-32 md:pb-12 animate-fadeIn w-full max-w-full overflow-x-hidden">
       {/* Loading & Multi-Step Progress Overlay: Material Dialog */}
       {isGenerating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
@@ -591,10 +591,10 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
                 onChange={(e) => setTheologicalToPractical(Number(e.target.value))}
                 className="w-full accent-amber-600 h-2 bg-stone-200 rounded-lg cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                <span>Lebih Teologis (20%)</span>
-                <span>Seimbang</span>
-                <span>Lebih Praktis (80%)</span>
+              <div className="flex justify-between text-[10px] text-slate-400 mt-1 gap-1">
+                <span className="truncate">Teologis (20%)</span>
+                <span className="truncate px-1">Seimbang</span>
+                <span className="truncate">Praktis (80%)</span>
               </div>
             </div>
 
@@ -612,10 +612,10 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
                 onChange={(e) => setSeriousToRelaxed(Number(e.target.value))}
                 className="w-full accent-amber-600 h-2 bg-stone-200 rounded-lg cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                <span>Khidmat & Formal</span>
-                <span>Seimbang</span>
-                <span>Santai & Hangat</span>
+              <div className="flex justify-between text-[10px] text-slate-400 mt-1 gap-1">
+                <span className="truncate">Khidmat</span>
+                <span className="truncate px-1">Seimbang</span>
+                <span className="truncate">Santai</span>
               </div>
             </div>
           </div>

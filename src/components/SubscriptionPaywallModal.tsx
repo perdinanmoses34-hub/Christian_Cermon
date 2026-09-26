@@ -24,7 +24,7 @@ export const SubscriptionPaywallModal: React.FC<SubscriptionPaywallModalProps> =
   )}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn safe-area-bottom">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn safe-area-bottom w-full max-w-full overflow-hidden">
       <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden transform transition-all max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="relative bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 p-5 sm:p-7 text-white text-center shrink-0">

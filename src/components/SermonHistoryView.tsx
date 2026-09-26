@@ -80,7 +80,7 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -124,7 +124,7 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
         </div>
 
         {/* Method filter pills: horizontal scrolling */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 w-full">
           {methodsList.map((m) => (
             <button
               key={m.id}
@@ -207,31 +207,31 @@ export const SermonHistoryView: React.FC<SermonHistoryViewProps> = ({
                   {/* Android-ergonomic Action Row */}
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center justify-between pt-1 gap-2"
+                    className="flex items-center justify-between pt-1 gap-1.5 w-full"
                   >
-                    <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
                       <button
                         onClick={() => onOpenSermon(s)}
-                        className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                        className="flex-1 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-transform whitespace-nowrap"
                       >
-                        <FileEdit className="w-3.5 h-3.5" />
+                        <FileEdit className="w-3.5 h-3.5 shrink-0" />
                         <span>Buka</span>
                       </button>
 
                       <button
                         onClick={() => onOpenPowerPoint(s)}
-                        className="py-2 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 border border-amber-300/80 active:scale-95 transition-transform"
+                        className="flex-1 py-2 px-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 border border-amber-300/80 active:scale-95 transition-transform whitespace-nowrap"
                       >
-                        <Presentation className="w-3.5 h-3.5 text-amber-800" />
+                        <Presentation className="w-3.5 h-3.5 text-amber-800 shrink-0" />
                         <span>Slide PPT</span>
                       </button>
                     </div>
 
                     {/* Quick Overflow Menu for secondary actions */}
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <button
                         onClick={() => setActionMenuOpenId(isMenuOpen ? null : s.id)}
-                        className="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-600 active:scale-95 transition-transform"
+                        className="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-600 active:scale-95 transition-transform shrink-0"
                         title="Menu Lainnya"
                         aria-label="Menu Lainnya"
                       >

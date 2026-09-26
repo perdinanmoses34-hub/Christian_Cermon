@@ -212,12 +212,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col text-slate-900 selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen bg-stone-50 flex flex-col text-slate-900 selection:bg-amber-100 selection:text-amber-900 w-full max-w-full overflow-x-hidden">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl bg-slate-900 text-white border border-amber-500/40 shadow-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-amber-400" />
-          {notification.message}
+        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl bg-slate-900 text-white border border-amber-500/40 shadow-2xl text-xs font-semibold flex items-center gap-2 animate-bounce max-w-[calc(100vw-40px)]">
+          <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+          <span className="truncate">{notification.message}</span>
         </div>
       )}
 
@@ -232,7 +232,7 @@ export default function App() {
       />
 
       {/* View Routing */}
-      <div className={`flex-1 flex flex-col ${['dashboard', 'bible', 'commentary', 'history'].includes(currentView) ? 'pb-20 md:pb-0' : 'pb-0'}`}>
+      <div className={`flex-1 flex flex-col w-full max-w-full min-w-0 overflow-x-hidden ${['dashboard', 'bible', 'commentary', 'history'].includes(currentView) ? 'pb-20 md:pb-0' : 'pb-0'}`}>
         {currentView === 'landing' && (
           <LandingPage
             onStartNow={() => {

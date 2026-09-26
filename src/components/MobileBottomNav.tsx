@@ -25,8 +25,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const isSuperadmin = currentUser?.role === 'superadmin' || currentUser?.username === 'tn.timbu';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-white md:hidden shadow-lg safe-area-bottom">
-      <div className="grid grid-cols-5 h-14 max-w-md mx-auto items-center px-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-white md:hidden shadow-lg safe-area-bottom w-full max-w-full overflow-hidden">
+      <div className="grid grid-cols-5 h-14 max-w-md mx-auto items-center px-1 w-full">
         {/* Tab 1: Home */}
         <button
           onClick={() => onNavigate(currentUser ? 'dashboard' : 'landing')}

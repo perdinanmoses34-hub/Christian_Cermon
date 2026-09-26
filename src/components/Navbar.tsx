@@ -87,10 +87,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-md safe-area-top">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-md safe-area-top w-full max-w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 w-full min-w-0">
           {/* Mobile view: Android App Bar style */}
-          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0">
+          <div className="flex md:hidden items-center gap-2 flex-1 min-w-0 overflow-hidden">
             {isSubView ? (
               <button
                 onClick={() => onNavigate(currentUser ? 'dashboard' : 'landing')}
@@ -102,25 +102,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <div
                 onClick={() => onNavigate(currentUser ? 'dashboard' : 'landing')}
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-900/30 shrink-0"
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-900/30 shrink-0 cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-slate-950 font-bold" />
               </div>
             )}
 
-            <div className="min-w-0 flex-1">
-              <h1 className="font-semibold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <div className="font-semibold text-sm sm:text-base text-white truncate">
                 {isSubView ? (
-                  getViewTitle()
+                  <span>{getViewTitle()}</span>
                 ) : (
-                  <>
+                  <span className="flex items-center gap-1.5 truncate">
                     <span className="font-cinzel tracking-wider font-bold">SERMON</span>
                     <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
                       AI
                     </span>
-                  </>
+                  </span>
                 )}
-              </h1>
+              </div>
               {!isSubView && (
                 <p className="text-[10px] text-slate-400 truncate">Sistematis • Alkitabiah</p>
               )}
@@ -254,7 +254,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* Right Action: User Avatar / Login */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {currentUser ? (
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}

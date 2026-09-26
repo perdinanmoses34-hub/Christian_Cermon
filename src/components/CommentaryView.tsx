@@ -138,7 +138,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
       {/* Desktop Header Banner */}
       <div className="hidden sm:flex bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-5 sm:p-7 text-white border border-slate-800 shadow-xl flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -165,7 +165,7 @@ Christian Sermon Builder | Soli Deo Gloria`;
         <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">
           Pakar & Teolog Rujukan
         </h3>
-        <div className="flex md:grid md:grid-cols-6 gap-2.5 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+        <div className="flex md:grid md:grid-cols-6 gap-2.5 overflow-x-auto no-scrollbar pb-1 w-full">
           {SCHOLAR_LIST.map((sc) => {
             const isSelected = selectedScholar === sc.name;
             return (

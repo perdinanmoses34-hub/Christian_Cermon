@@ -230,7 +230,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
   }, [users]);
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-8 animate-fadeIn pb-safe md:pb-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-8 animate-fadeIn pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-2xl p-4 sm:p-7 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -312,7 +312,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
       </div>
 
       {/* Tabs Navigation: Horizontal scroll on mobile */}
-      <div className="flex items-center gap-1.5 border-b border-stone-200 pb-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+      <div className="flex items-center gap-1.5 border-b border-stone-200 pb-2 overflow-x-auto no-scrollbar w-full">
         <button
           onClick={() => setActiveTab('users')}
           className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors active:scale-95 ${

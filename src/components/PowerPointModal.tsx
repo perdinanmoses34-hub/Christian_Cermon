@@ -292,7 +292,7 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
   const themeStyle = getSlideThemeStyles();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn safe-area-top safe-area-bottom w-full max-w-full overflow-hidden">
       <div className="bg-slate-900 border-0 sm:border border-slate-800 rounded-none sm:rounded-3xl w-full max-w-6xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         {/* Header */}
         <div className="p-3.5 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-3 bg-slate-950 shrink-0">

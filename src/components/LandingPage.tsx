@@ -24,93 +24,93 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowItWorks }) => {
   return (
-    <div className="bg-stone-50 min-h-screen">
+    <div className="bg-stone-50 min-h-screen w-full max-w-full overflow-x-hidden">
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white pt-10 sm:pt-20 pb-16 sm:pb-28 px-4 sm:px-6 lg:px-8 border-b border-amber-500/20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white pt-8 sm:pt-20 pb-14 sm:pb-28 px-3.5 sm:px-6 lg:px-8 border-b border-amber-500/20 w-full max-w-full">
         {/* Subtle decorative background light & cross pattern */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-64 sm:w-96 h-64 sm:h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+        <div className="max-w-5xl mx-auto text-center relative z-10 w-full min-w-0">
           {/* Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] sm:text-xs font-semibold tracking-wide uppercase mb-4 sm:mb-6 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            Asisten Khotbah Berbasis Teologi Alkitabiah
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] sm:text-xs font-semibold tracking-wide uppercase mb-3.5 sm:mb-6 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span>Asisten Khotbah Alkitabiah</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-2xl sm:text-5xl lg:text-6xl font-serif-title font-bold tracking-tight text-white leading-snug sm:leading-tight mb-4 sm:mb-6">
-            Buat Khotbah yang <span className="text-amber-400 underline decoration-amber-500/40 decoration-wavy underline-offset-8">Sistematis</span>, Alkitabiah, dan Relevan dengan Bantuan AI
+          <h1 className="text-2xl sm:text-5xl lg:text-6xl font-serif-title font-bold tracking-tight text-white leading-snug sm:leading-tight mb-3.5 sm:mb-6">
+            Buat Khotbah yang <span className="text-amber-400">Sistematis</span>, Alkitabiah, dan Relevan dengan Bantuan AI
           </h1>
 
           {/* Subheadline */}
-          <p className="text-sm sm:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-6 sm:mb-10">
+          <p className="text-xs sm:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-5 sm:mb-10 px-1">
             Masukkan tema dan ayat Alkitab, pilih metode khotbah, dan biarkan AI membantu menyusun khotbah lengkap serta presentasi PowerPoint siap mimbar.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 max-w-md sm:max-w-none mx-auto w-full">
             <button
               onClick={onStartNow}
-              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm sm:text-base shadow-xl shadow-amber-900/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-base shadow-xl shadow-amber-900/30 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               <span>Buat Khotbah Sekarang</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 shrink-0" />
             </button>
             <button
               onClick={onOpenHowItWorks}
-              className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="w-full sm:w-auto px-5 sm:px-7 py-2.5 sm:py-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs sm:text-base transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
               <span>Lihat Cara Kerja</span>
             </button>
           </div>
 
           {/* Value Props Bar */}
-          <div className="mt-8 sm:mt-14 pt-6 sm:pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-left">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">8 Metode Homiletika</span>
+          <div className="mt-7 sm:mt-14 pt-5 sm:pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-left">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">8 Metode Homiletika</span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">PowerPoint .PPTX</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">PowerPoint .PPTX</span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">Integritas Alkitabiah</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">Integritas Alkitabiah</span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs text-slate-300 font-medium">Speaker Notes Mimbar</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">Catatan Mimbar</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* PRODUCT PREVIEW SHOWCASE */}
-      <section className="max-w-6xl mx-auto px-3 sm:px-6 -mt-8 sm:-mt-16 relative z-20">
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden p-3 sm:p-5">
-          <div className="bg-slate-950 rounded-xl border border-slate-800/80 p-6 text-slate-100">
-            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+      <section className="max-w-6xl mx-auto px-3 sm:px-6 -mt-6 sm:-mt-16 relative z-20 w-full max-w-full">
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden p-2.5 sm:p-5 w-full">
+          <div className="bg-slate-950 rounded-xl border border-slate-800/80 p-3 sm:p-6 text-slate-100 w-full overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 sm:pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0 text-sm">
                   ✝
                 </div>
-                <div>
-                  <h3 className="font-serif-title text-base sm:text-lg font-bold text-white">
+                <div className="min-w-0">
+                  <h3 className="font-serif-title text-sm sm:text-lg font-bold text-white truncate">
                     Hidup Dalam Iman yang Sejati
                   </h3>
-                  <p className="text-xs text-amber-400">Ibrani 11:1-6 • Metode Ekspositori • Dewasa</p>
+                  <p className="text-[10px] sm:text-xs text-amber-400 truncate">Ibrani 11:1-6 • Ekspositori • Dewasa</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 px-2.5 py-1 rounded-md font-medium">
+              <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+                <span className="text-[10px] sm:text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 px-2 py-0.5 rounded font-medium">
                   Auto Saved
                 </span>
-                <span className="text-xs bg-amber-500 text-slate-950 px-3 py-1 rounded-md font-semibold">
-                  11 Slides PPTX Ready
+                <span className="text-[10px] sm:text-xs bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-semibold whitespace-nowrap">
+                  11 Slides PPTX
                 </span>
               </div>
             </div>
@@ -379,19 +379,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowI
       </section>
 
       {/* BIBLICAL INTEGRITY BANNER */}
-      <section className="py-16 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="bg-slate-900 text-slate-200 rounded-2xl p-8 border border-amber-500/30 flex flex-col md:flex-row items-center gap-6 shadow-xl">
-          <div className="w-16 h-16 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-            <ShieldCheck className="w-8 h-8" />
+      <section className="py-12 sm:py-16 max-w-5xl mx-auto px-3.5 sm:px-6 w-full">
+        <div className="bg-slate-900 text-slate-200 rounded-2xl p-4 sm:p-8 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 shadow-xl w-full">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+            <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8" />
           </div>
-          <div>
-            <h3 className="text-xl font-serif-title font-bold text-white mb-2">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-xl font-serif-title font-bold text-white mb-1.5">
               Komitmen Integritas Alkitabiah
             </h3>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               "Khotbah ini dibuat sebagai alat bantu persiapan. Verifikasi kembali interpretasi, konteks, referensi Alkitab, dan penerapannya sebelum digunakan dalam pelayanan mimbar."
             </p>
-            <p className="text-xs text-amber-400/90 mt-2 font-medium">
+            <p className="text-[11px] sm:text-xs text-amber-400/90 mt-1.5 font-medium">
               Sistem AI kami dipandu secara ketat untuk tidak mengarang ayat fiktif, menghormati konteks historis naskah, dan mengutamakan Injil Kristus.
             </p>
           </div>
@@ -399,20 +399,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartNow, onOpenHowI
       </section>
 
       {/* FINAL CTA */}
-      <section className="bg-slate-950 text-white py-20 px-4 sm:px-6 text-center border-t border-slate-800">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-serif-title font-bold mb-4">
+      <section className="bg-slate-950 text-white py-14 sm:py-20 px-3.5 sm:px-6 text-center border-t border-slate-800 w-full max-w-full">
+        <div className="max-w-3xl mx-auto w-full min-w-0">
+          <h2 className="text-xl sm:text-4xl font-serif-title font-bold mb-3 sm:mb-4">
             Siapkan Khotbah Minggu Ini dengan Percaya Diri
           </h2>
-          <p className="text-slate-400 text-base mb-8">
+          <p className="text-slate-400 text-xs sm:text-base mb-6 sm:mb-8 max-w-xl mx-auto">
             Dapatkan khotbah yang terstruktur rapi, mendalam secara Alkitabiah, serta presentasi PowerPoint dalam hitungan menit.
           </p>
           <button
             onClick={onStartNow}
-            className="px-9 py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-base shadow-xl shadow-amber-900/40 transition-transform transform hover:scale-105 inline-flex items-center gap-3 cursor-pointer"
+            className="w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-base shadow-xl shadow-amber-900/40 active:scale-95 transition-all inline-flex items-center justify-center gap-2.5 cursor-pointer"
           >
-            <Sparkles className="w-5 h-5" />
-            Mulai Buat Khotbah Sekarang
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+            <span>Mulai Buat Khotbah Sekarang</span>
           </button>
         </div>
       </section>
