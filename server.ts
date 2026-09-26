@@ -31,8 +31,37 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 interface DBData {
-  users: Array<{ id: string; name: string; email: string; church_name?: string; password?: string }>;
+  users: Array<{
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    church_name?: string;
+    password?: string;
+    role?: 'user' | 'superadmin';
+    subscription_status?: 'free' | 'premium' | 'expired';
+    subscription_expires_at?: string | null;
+    is_active?: boolean;
+    phone?: string;
+    created_at?: string;
+  }>;
   sermons: any[];
+  feature_locks?: {
+    aiSermonGeneration: boolean;
+    powerPointExport: boolean;
+    scholarlyCommentary: boolean;
+    sermonAiAssistant: boolean;
+    tolakiBible: boolean;
+    unlimitedSermons: boolean;
+  };
+  payment_info?: {
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+    whatsappContact: string;
+    monthlyPrice: string;
+    yearlyPrice: string;
+  };
 }
 
 function loadDB(): DBData {
@@ -40,7 +69,46 @@ function loadDB(): DBData {
     if (fs.existsSync(DB_FILE)) {
       const content = fs.readFileSync(DB_FILE, 'utf-8');
       const parsed = JSON.parse(content);
-      if (parsed.sermons && parsed.sermons.length > 0) {
+      // Ensure superadmin exists in parsed db
+      if (parsed.users) {
+        const hasSuperadmin = parsed.users.some(
+          (u: any) => u.username === 'tn.timbu' || u.role === 'superadmin'
+        );
+        if (!hasSuperadmin) {
+          parsed.users.unshift({
+            id: 'user-superadmin',
+            name: 'Tn. Timbu (Superadmin)',
+            username: 'tn.timbu',
+            email: 'tn.timbu@gereja.id',
+            password: 'Eklesia_030918',
+            church_name: 'Gereja Eklesia',
+            role: 'superadmin',
+            subscription_status: 'premium',
+            subscription_expires_at: null,
+            is_active: true,
+            created_at: '2026-01-01T00:00:00.000Z',
+          });
+        }
+        if (!parsed.feature_locks) {
+          parsed.feature_locks = {
+            aiSermonGeneration: false,
+            powerPointExport: true,
+            scholarlyCommentary: true,
+            sermonAiAssistant: true,
+            tolakiBible: false,
+            unlimitedSermons: true,
+          };
+        }
+        if (!parsed.payment_info) {
+          parsed.payment_info = {
+            bankName: 'BCA (Bank Central Asia)',
+            accountNumber: '8220193812',
+            accountHolder: 'Yayasan Pelayanan Khotbah Kristen',
+            whatsappContact: '6281234567890',
+            monthlyPrice: 'Rp 49.000 / bulan',
+            yearlyPrice: 'Rp 399.000 / tahun',
+          };
+        }
         return parsed;
       }
     }
@@ -51,12 +119,47 @@ function loadDB(): DBData {
   const initialData: DBData = {
     users: [
       {
+        id: 'user-superadmin',
+        name: 'Tn. Timbu (Superadmin)',
+        username: 'tn.timbu',
+        email: 'tn.timbu@gereja.id',
+        password: 'Eklesia_030918',
+        church_name: 'Gereja Eklesia',
+        role: 'superadmin',
+        subscription_status: 'premium',
+        subscription_expires_at: null,
+        is_active: true,
+        created_at: '2026-01-01T00:00:00.000Z',
+      },
+      {
         id: 'user-demo-1',
         name: 'Pdt. David Christian',
+        username: 'david.christian',
         email: 'david@gereja.id',
         church_name: 'Gereja Kristen Indonesia',
+        role: 'user',
+        subscription_status: 'free',
+        subscription_expires_at: '2026-12-31T23:59:59.000Z',
+        is_active: true,
+        created_at: '2026-01-15T00:00:00.000Z',
       },
     ],
+    feature_locks: {
+      aiSermonGeneration: false,
+      powerPointExport: true,
+      scholarlyCommentary: true,
+      sermonAiAssistant: true,
+      tolakiBible: false,
+      unlimitedSermons: true,
+    },
+    payment_info: {
+      bankName: 'BCA (Bank Central Asia)',
+      accountNumber: '8220193812',
+      accountHolder: 'Yayasan Pelayanan Khotbah Kristen',
+      whatsappContact: '6281234567890',
+      monthlyPrice: 'Rp 49.000 / bulan',
+      yearlyPrice: 'Rp 399.000 / tahun',
+    },
     sermons: [
       {
         id: 'sermon-1',
@@ -216,43 +319,94 @@ function getUserIdFromRequest(req: Request): string {
 // Authentication Endpoints
 // -------------------------------------------------------------
 app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { email } = req.body;
+  const { email, username, password } = req.body;
   const db = loadDB();
-  let user = db.users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
+  const query = (email || username || '').toLowerCase().trim();
+
+  // Find user by email or username
+  let user = db.users.find(
+    (u) =>
+      (u.email && u.email.toLowerCase() === query) ||
+      (u.username && u.username.toLowerCase() === query)
+  );
+
+  // If superadmin login attempt
+  if (query === 'tn.timbu' || query === 'tn.timbu@gereja.id') {
+    if (password && password !== 'Eklesia_030918') {
+      return res.status(401).json({ error: 'Kata sandi superadmin salah.' });
+    }
+    if (!user) {
+      user = {
+        id: 'user-superadmin',
+        name: 'Tn. Timbu (Superadmin)',
+        username: 'tn.timbu',
+        email: 'tn.timbu@gereja.id',
+        password: 'Eklesia_030918',
+        church_name: 'Gereja Eklesia',
+        role: 'superadmin',
+        subscription_status: 'premium',
+        subscription_expires_at: null,
+        is_active: true,
+        created_at: '2026-01-01T00:00:00.000Z',
+      };
+      db.users.unshift(user);
+      saveDB(db);
+    }
+  }
+
   if (!user) {
     user = {
       id: `user-${Date.now()}`,
-      name: email ? email.split('@')[0] : 'Pelayan Tuhan',
-      email: email || 'hamba@gereja.id',
+      name: query.includes('@') ? query.split('@')[0] : query || 'Pelayan Tuhan',
+      email: query.includes('@') ? query : `${query}@gereja.id`,
+      username: query.includes('@') ? query.split('@')[0] : query,
       church_name: 'Gereja Kristen',
+      role: 'user',
+      subscription_status: 'free',
+      subscription_expires_at: '2026-12-31T23:59:59.000Z',
+      is_active: true,
+      created_at: new Date().toISOString(),
     };
     db.users.push(user);
     saveDB(db);
   }
+
+  // Check if user is suspended
+  if (user.is_active === false) {
+    return res.status(403).json({
+      error: 'Akun Anda telah dinonaktifkan oleh Superadmin. Silakan hubungi admin gereja.',
+    });
+  }
+
   res.json({
     token: user.id,
     user: {
       id: user.id,
       name: user.name,
       email: user.email,
+      username: user.username,
       church_name: user.church_name,
+      role: user.role || 'user',
+      subscription_status: user.subscription_status || 'free',
+      subscription_expires_at: user.subscription_expires_at,
+      is_active: user.is_active ?? true,
+      created_at: user.created_at,
     },
   });
 });
 
 app.post('/api/auth/register', (req: Request, res: Response) => {
-  const { name, email, church_name } = req.body;
+  const { name, email, church_name, username } = req.body;
   const db = loadDB();
-  const existing = db.users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
+  const existing = db.users.find(
+    (u) =>
+      u.email.toLowerCase() === (email || '').toLowerCase() ||
+      (username && u.username && u.username.toLowerCase() === username.toLowerCase())
+  );
   if (existing) {
     return res.json({
       token: existing.id,
-      user: {
-        id: existing.id,
-        name: existing.name,
-        email: existing.email,
-        church_name: existing.church_name,
-      },
+      user: existing,
     });
   }
 
@@ -260,7 +414,13 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
     id: `user-${Date.now()}`,
     name: name || 'Pelayan Tuhan',
     email: email || 'user@gereja.id',
+    username: username || (email ? email.split('@')[0] : `user_${Date.now()}`),
     church_name: church_name || 'Gereja Kristen',
+    role: 'user' as const,
+    subscription_status: 'free' as const,
+    subscription_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    is_active: true,
+    created_at: new Date().toISOString(),
   };
   db.users.push(newUser);
   saveDB(db);
@@ -269,6 +429,95 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
     token: newUser.id,
     user: newUser,
   });
+});
+
+// -------------------------------------------------------------
+// Superadmin Management Endpoints
+// -------------------------------------------------------------
+app.get('/api/admin/users', (req: Request, res: Response) => {
+  const db = loadDB();
+  const safeUsers = db.users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    username: u.username,
+    church_name: u.church_name,
+    role: u.role || 'user',
+    subscription_status: u.subscription_status || 'free',
+    subscription_expires_at: u.subscription_expires_at,
+    is_active: u.is_active ?? true,
+    phone: u.phone,
+    created_at: u.created_at || new Date().toISOString(),
+    sermons_count: db.sermons.filter((s) => s.user_id === u.id).length,
+  }));
+  res.json({ users: safeUsers });
+});
+
+app.put('/api/admin/users/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { is_active, subscription_status, subscription_expires_at, role, name, church_name } = req.body;
+  const db = loadDB();
+  const user = db.users.find((u) => u.id === id);
+
+  if (!user) {
+    return res.status(404).json({ error: 'Pengguna tidak ditemukan.' });
+  }
+
+  if (is_active !== undefined) user.is_active = is_active;
+  if (subscription_status !== undefined) user.subscription_status = subscription_status;
+  if (subscription_expires_at !== undefined) user.subscription_expires_at = subscription_expires_at;
+  if (role !== undefined) user.role = role;
+  if (name !== undefined) user.name = name;
+  if (church_name !== undefined) user.church_name = church_name;
+
+  saveDB(db);
+  res.json({ success: true, user });
+});
+
+app.delete('/api/admin/users/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const db = loadDB();
+
+  if (id === 'user-superadmin') {
+    return res.status(400).json({ error: 'Akun Superadmin utama tidak dapat dihapus.' });
+  }
+
+  db.users = db.users.filter((u) => u.id !== id);
+  db.sermons = db.sermons.filter((s) => s.user_id !== id);
+  saveDB(db);
+
+  res.json({ success: true, message: 'Pengguna berhasil dihapus.' });
+});
+
+app.get('/api/admin/settings', (_req: Request, res: Response) => {
+  const db = loadDB();
+  res.json({
+    feature_locks: db.feature_locks || {
+      aiSermonGeneration: false,
+      powerPointExport: true,
+      scholarlyCommentary: true,
+      sermonAiAssistant: true,
+      tolakiBible: false,
+      unlimitedSermons: true,
+    },
+    payment_info: db.payment_info || {
+      bankName: 'BCA (Bank Central Asia)',
+      accountNumber: '8220193812',
+      accountHolder: 'Yayasan Pelayanan Khotbah Kristen',
+      whatsappContact: '6281234567890',
+      monthlyPrice: 'Rp 49.000 / bulan',
+      yearlyPrice: 'Rp 399.000 / tahun',
+    },
+  });
+});
+
+app.put('/api/admin/settings', (req: Request, res: Response) => {
+  const { feature_locks, payment_info } = req.body;
+  const db = loadDB();
+  if (feature_locks) db.feature_locks = feature_locks;
+  if (payment_info) db.payment_info = payment_info;
+  saveDB(db);
+  res.json({ success: true, feature_locks: db.feature_locks, payment_info: db.payment_info });
 });
 
 app.get('/api/auth/me', (req: Request, res: Response) => {

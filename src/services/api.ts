@@ -1,8 +1,58 @@
-import { Sermon, User, PowerPointConfig } from '../types/sermon';
+import { Sermon, User, PowerPointConfig, FeatureLocks, PaymentInfo } from '../types/sermon';
 import { INITIAL_SAMPLE_SERMONS } from '../data/sampleSermons';
 
 const LOCAL_STORAGE_KEY = 'csb_sermons_v1';
 const LOCAL_STORAGE_USER_KEY = 'csb_current_user_v1';
+const LOCAL_STORAGE_LOCKS_KEY = 'csb_feature_locks_v1';
+const LOCAL_STORAGE_PAYMENT_KEY = 'csb_payment_info_v1';
+const LOCAL_STORAGE_USERS_LIST_KEY = 'csb_all_users_v1';
+
+export const DEFAULT_FEATURE_LOCKS: FeatureLocks = {
+  aiSermonGeneration: false,
+  powerPointExport: true,
+  scholarlyCommentary: true,
+  sermonAiAssistant: true,
+  tolakiBible: false,
+  unlimitedSermons: true,
+};
+
+export const DEFAULT_PAYMENT_INFO: PaymentInfo = {
+  bankName: 'BCA (Bank Central Asia)',
+  accountNumber: '8220193812',
+  accountHolder: 'Yayasan Pelayanan Khotbah Kristen',
+  whatsappContact: '6281234567890',
+  monthlyPrice: 'Rp 49.000 / bulan',
+  yearlyPrice: 'Rp 399.000 / tahun',
+};
+
+const DEFAULT_SUPERADMIN: User = {
+  id: 'user-superadmin',
+  name: 'Tn. Timbu (Superadmin)',
+  username: 'tn.timbu',
+  email: 'tn.timbu@gereja.id',
+  church_name: 'Gereja Eklesia',
+  role: 'superadmin',
+  subscription_status: 'premium',
+  subscription_expires_at: null,
+  is_active: true,
+  created_at: '2026-01-01T00:00:00.000Z',
+};
+
+const DEFAULT_USERS: User[] = [
+  DEFAULT_SUPERADMIN,
+  {
+    id: 'user-demo-1',
+    name: 'Pdt. David Christian',
+    username: 'david.christian',
+    email: 'david@gereja.id',
+    church_name: 'Gereja Kristen Indonesia',
+    role: 'user',
+    subscription_status: 'free',
+    subscription_expires_at: '2026-12-31T23:59:59.000Z',
+    is_active: true,
+    created_at: '2026-01-15T00:00:00.000Z',
+  },
+];
 
 export function getStoredUser(): User {
   try {
@@ -11,13 +61,7 @@ export function getStoredUser(): User {
   } catch (e) {
     console.error('Failed to load user from localStorage', e);
   }
-  const defaultUser: User = {
-    id: 'user-demo-1',
-    name: 'Pdt. David Christian',
-    email: 'david@gereja.id',
-    church_name: 'Gereja Kristen Indonesia',
-    role: 'Pendeta / Gembala Jemaat',
-  };
+  const defaultUser: User = DEFAULT_USERS[1];
   localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(defaultUser));
   return defaultUser;
 }
@@ -28,6 +72,52 @@ export function setStoredUser(user: User): void {
 
 export function clearStoredUser(): void {
   localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+}
+
+export function getStoredFeatureLocks(): FeatureLocks {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_LOCKS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {
+    console.error('Failed to load feature locks', e);
+  }
+  return DEFAULT_FEATURE_LOCKS;
+}
+
+export function saveStoredFeatureLocks(locks: FeatureLocks): void {
+  localStorage.setItem(LOCAL_STORAGE_LOCKS_KEY, JSON.stringify(locks));
+}
+
+export function getStoredPaymentInfo(): PaymentInfo {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_PAYMENT_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {
+    console.error('Failed to load payment info', e);
+  }
+  return DEFAULT_PAYMENT_INFO;
+}
+
+export function saveStoredPaymentInfo(info: PaymentInfo): void {
+  localStorage.setItem(LOCAL_STORAGE_PAYMENT_KEY, JSON.stringify(info));
+}
+
+export function getStoredUsersList(): User[] {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_USERS_LIST_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.error('Failed to parse users list', e);
+  }
+  localStorage.setItem(LOCAL_STORAGE_USERS_LIST_KEY, JSON.stringify(DEFAULT_USERS));
+  return DEFAULT_USERS;
+}
+
+export function saveStoredUsersList(users: User[]): void {
+  localStorage.setItem(LOCAL_STORAGE_USERS_LIST_KEY, JSON.stringify(users));
 }
 
 export function getLocalSermons(): Sermon[] {
@@ -431,4 +521,220 @@ export async function regeneratePowerPointApi(
     aspectRatio: config.aspectRatio || sermon.powerpoint?.aspectRatio || '16:9',
     slides: existingSlides,
   };
+}
+
+// -------------------------------------------------------------
+// Authentication API with Superadmin Support
+// -------------------------------------------------------------
+export async function loginUserApi(credentials: {
+  email?: string;
+  username?: string;
+  password?: string;
+  name?: string;
+  church_name?: string;
+}): Promise<User> {
+  const query = (credentials.email || credentials.username || '').toLowerCase().trim();
+
+  // Try server endpoint
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.user) {
+        setStoredUser(data.user);
+        return data.user;
+      }
+    } else {
+      const err = await res.json().catch(() => ({}));
+      if (err.error) throw new Error(err.error);
+    }
+  } catch (err: any) {
+    if (err.message && err.message.includes('Superadmin')) {
+      throw err;
+    }
+    console.warn('Backend login unavailable or errored, evaluating via client auth logic', err);
+  }
+
+  // Client-side authentication logic (for GitHub Pages static hosting)
+  const usersList = getStoredUsersList();
+
+  // 1. Superadmin check
+  if (query === 'tn.timbu' || query === 'tn.timbu@gereja.id') {
+    if (credentials.password !== 'Eklesia_030918') {
+      throw new Error('Kata sandi superadmin salah.');
+    }
+    let superadmin = usersList.find((u) => u.username === 'tn.timbu' || u.role === 'superadmin');
+    if (!superadmin) {
+      superadmin = {
+        id: 'user-superadmin',
+        name: 'Tn. Timbu (Superadmin)',
+        username: 'tn.timbu',
+        email: 'tn.timbu@gereja.id',
+        church_name: 'Gereja Eklesia',
+        role: 'superadmin',
+        subscription_status: 'premium',
+        subscription_expires_at: null,
+        is_active: true,
+        created_at: '2026-01-01T00:00:00.000Z',
+      };
+      usersList.unshift(superadmin);
+      saveStoredUsersList(usersList);
+    }
+
+    if (superadmin.is_active === false) {
+      throw new Error('Akun Anda telah dinonaktifkan oleh Administrator.');
+    }
+
+    setStoredUser(superadmin);
+    return superadmin;
+  }
+
+  // 2. Regular user check
+  let existingUser = usersList.find(
+    (u) =>
+      (u.email && u.email.toLowerCase() === query) ||
+      (u.username && u.username.toLowerCase() === query)
+  );
+
+  if (existingUser) {
+    if (existingUser.is_active === false) {
+      throw new Error('Akun Anda telah dinonaktifkan oleh Superadmin. Silakan hubungi admin gereja.');
+    }
+    setStoredUser(existingUser);
+    return existingUser;
+  }
+
+  // 3. New registered user
+  const newUser: User = {
+    id: `user-${Date.now()}`,
+    name: credentials.name || (query.includes('@') ? query.split('@')[0] : query || 'Pelayan Tuhan'),
+    email: query.includes('@') ? query : `${query}@gereja.id`,
+    username: query.includes('@') ? query.split('@')[0] : query,
+    church_name: credentials.church_name || 'Gereja Kristen',
+    role: 'user',
+    subscription_status: 'free',
+    subscription_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    is_active: true,
+    created_at: new Date().toISOString(),
+  };
+
+  usersList.push(newUser);
+  saveStoredUsersList(usersList);
+  setStoredUser(newUser);
+  return newUser;
+}
+
+// -------------------------------------------------------------
+// Superadmin Management API
+// -------------------------------------------------------------
+export async function fetchAdminUsersApi(): Promise<User[]> {
+  try {
+    const res = await fetch('/api/admin/users');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.users)) {
+        saveStoredUsersList(data.users);
+        return data.users;
+      }
+    }
+  } catch (err) {
+    console.warn('Backend /api/admin/users unreachable, using local storage cache', err);
+  }
+  return getStoredUsersList();
+}
+
+export async function updateAdminUserApi(userId: string, updates: Partial<User>): Promise<User> {
+  try {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.user) {
+        // Also update local storage
+        const list = getStoredUsersList();
+        const idx = list.findIndex((u) => u.id === userId);
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...data.user };
+          saveStoredUsersList(list);
+        }
+        return data.user;
+      }
+    }
+  } catch (err) {
+    console.warn('Backend update admin user failed, persisting locally', err);
+  }
+
+  const list = getStoredUsersList();
+  const idx = list.findIndex((u) => u.id === userId);
+  if (idx >= 0) {
+    list[idx] = { ...list[idx], ...updates };
+    saveStoredUsersList(list);
+    return list[idx];
+  }
+  throw new Error('Pengguna tidak ditemukan.');
+}
+
+export async function deleteAdminUserApi(userId: string): Promise<void> {
+  if (userId === 'user-superadmin') {
+    throw new Error('Akun superadmin utama tidak dapat dihapus.');
+  }
+
+  try {
+    await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+  } catch (err) {
+    console.warn('Backend delete admin user failed, deleting locally', err);
+  }
+
+  const list = getStoredUsersList().filter((u) => u.id !== userId);
+  saveStoredUsersList(list);
+}
+
+export async function fetchAdminSettingsApi(): Promise<{
+  feature_locks: FeatureLocks;
+  payment_info: PaymentInfo;
+}> {
+  try {
+    const res = await fetch('/api/admin/settings');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.feature_locks && data.payment_info) {
+        saveStoredFeatureLocks(data.feature_locks);
+        saveStoredPaymentInfo(data.payment_info);
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('Backend settings unreachable, using local storage cache', err);
+  }
+
+  return {
+    feature_locks: getStoredFeatureLocks(),
+    payment_info: getStoredPaymentInfo(),
+  };
+}
+
+export async function updateAdminSettingsApi(payload: {
+  feature_locks?: FeatureLocks;
+  payment_info?: PaymentInfo;
+}): Promise<void> {
+  try {
+    await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.warn('Backend update settings failed, saving locally', err);
+  }
+
+  if (payload.feature_locks) saveStoredFeatureLocks(payload.feature_locks);
+  if (payload.payment_info) saveStoredPaymentInfo(payload.payment_info);
 }

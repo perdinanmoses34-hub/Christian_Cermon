@@ -8,25 +8,37 @@ import { SermonEditor } from './components/SermonEditor';
 import { PowerPointModal } from './components/PowerPointModal';
 import { SermonOutlineModal } from './components/SermonOutlineModal';
 import { HowItWorksModal } from './components/HowItWorksModal';
-import { Sermon, User } from './types/sermon';
+import { Sermon, User, FeatureLocks, PaymentInfo } from './types/sermon';
 import {
   getStoredUser,
   clearStoredUser,
   fetchUserSermons,
   saveSermon,
   deleteSermonApi,
+  fetchAdminSettingsApi,
+  DEFAULT_FEATURE_LOCKS,
+  DEFAULT_PAYMENT_INFO,
 } from './services/api';
 import { SermonHistoryView } from './components/SermonHistoryView';
 import { BibleReaderView } from './components/BibleReaderView';
 import { CommentaryView } from './components/CommentaryView';
+import { SuperadminPanel } from './components/SuperadminPanel';
+import { SubscriptionPaywallModal } from './components/SubscriptionPaywallModal';
+import { MobileBottomNav } from './components/MobileBottomNav';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'create' | 'editor' | 'history' | 'bible' | 'commentary'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'create' | 'editor' | 'history' | 'bible' | 'commentary' | 'superadmin'>('landing');
   const [sermons, setSermons] = useState<Sermon[]>([]);
   const [activeSermon, setActiveSermon] = useState<Sermon | null>(null);
   const [wizardInitialData, setWizardInitialData] = useState<{ scripture?: string; theme?: string; objective?: string } | null>(null);
   const [commentaryInitialPassage, setCommentaryInitialPassage] = useState<string>('');
+
+  // Feature Locks & Payment Config
+  const [featureLocks, setFeatureLocks] = useState<FeatureLocks>(DEFAULT_FEATURE_LOCKS);
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>(DEFAULT_PAYMENT_INFO);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallFeatureName, setPaywallFeatureName] = useState('');
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -35,7 +47,7 @@ export default function App() {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
-  // Initialize user & load sermons
+  // Initialize user & load sermons & settings
   useEffect(() => {
     const user = getStoredUser();
     if (user) {
@@ -45,7 +57,35 @@ export default function App() {
     } else {
       loadSermons({ id: 'user-demo-1', name: 'Demo', email: 'demo@gereja.id' });
     }
+
+    // Load admin settings
+    fetchAdminSettingsApi().then((data) => {
+      if (data) {
+        setFeatureLocks(data.feature_locks);
+        setPaymentInfo(data.payment_info);
+      }
+    });
   }, []);
+
+  const isUserPremiumOrSuperadmin = (user: User | null): boolean => {
+    if (!user) return false;
+    if (user.role === 'superadmin' || user.username === 'tn.timbu') return true;
+    if (user.subscription_status === 'premium') {
+      if (!user.subscription_expires_at) return true;
+      return new Date(user.subscription_expires_at).getTime() > Date.now();
+    }
+    return false;
+  };
+
+  const checkFeatureAccess = (featureKey: keyof FeatureLocks, featureLabel: string): boolean => {
+    if (isUserPremiumOrSuperadmin(currentUser)) return true;
+    if (featureLocks[featureKey]) {
+      setPaywallFeatureName(featureLabel);
+      setPaywallOpen(true);
+      return false;
+    }
+    return true;
+  };
 
   const showToast = (message: string, type: 'success' | 'info' = 'success') => {
     setNotification({ message, type });
@@ -81,8 +121,49 @@ export default function App() {
   };
 
   const handleOpenPowerPoint = (sermon: Sermon) => {
+    if (!checkFeatureAccess('powerPointExport', 'Download Presentasi PowerPoint (.PPTX)')) {
+      return;
+    }
     setActiveSermon(sermon);
     setIsPowerPointOpen(true);
+  };
+
+  const handleNavigate = (view: 'landing' | 'dashboard' | 'create' | 'history' | 'bible' | 'commentary' | 'superadmin') => {
+    if (view === 'superadmin') {
+      if (!isUserPremiumOrSuperadmin(currentUser) || currentUser?.role !== 'superadmin') {
+        showToast('Halaman ini khusus untuk Superadmin.', 'info');
+        return;
+      }
+      setCurrentView('superadmin');
+      return;
+    }
+
+    if (view === 'commentary') {
+      if (!checkFeatureAccess('scholarlyCommentary', 'Tafsiran Pakar Kredibel')) {
+        return;
+      }
+    }
+
+    if (view === 'create') {
+      if (!currentUser) {
+        setIsAuthOpen(true);
+        return;
+      }
+      if (featureLocks.aiSermonGeneration && !checkFeatureAccess('aiSermonGeneration', 'Pembuatan Khotbah AI')) {
+        return;
+      }
+      if (
+        featureLocks.unlimitedSermons &&
+        !isUserPremiumOrSuperadmin(currentUser) &&
+        sermons.length >= 3
+      ) {
+        setPaywallFeatureName('Khotbah Tanpa Batas (Batas Akun Gratis: 3 Khotbah)');
+        setPaywallOpen(true);
+        return;
+      }
+    }
+
+    setCurrentView(view);
   };
 
   const handleOpenOutline = (sermon: Sermon) => {
@@ -144,25 +225,19 @@ export default function App() {
       <Navbar
         currentUser={currentUser}
         currentView={currentView}
-        onNavigate={(view) => {
-          if (view === 'create' && !currentUser) {
-            setIsAuthOpen(true);
-            return;
-          }
-          setCurrentView(view);
-        }}
+        onNavigate={handleNavigate}
         onOpenAuth={() => setIsAuthOpen(true)}
         onLogout={handleLogout}
         onOpenHowItWorks={() => setIsHowItWorksOpen(true)}
       />
 
       {/* View Routing */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col pb-20 md:pb-0">
         {currentView === 'landing' && (
           <LandingPage
             onStartNow={() => {
               if (currentUser) {
-                setCurrentView('create');
+                handleNavigate('create');
               } else {
                 setIsAuthOpen(true);
               }
@@ -177,7 +252,7 @@ export default function App() {
             sermons={sermons}
             onCreateNew={() => {
               setWizardInitialData(null);
-              setCurrentView('create');
+              handleNavigate('create');
             }}
             onOpenSermon={handleOpenSermon}
             onOpenPowerPoint={handleOpenPowerPoint}
@@ -201,6 +276,14 @@ export default function App() {
           />
         )}
 
+        {currentView === 'superadmin' && currentUser && (
+          <SuperadminPanel
+            currentUser={currentUser}
+            onBackToApp={() => setCurrentView('dashboard')}
+            showToast={showToast}
+          />
+        )}
+
         {currentView === 'bible' && (
           <BibleReaderView
             onUseForSermon={(verseRef, themeHint) => {
@@ -212,12 +295,12 @@ export default function App() {
               if (!currentUser) {
                 setIsAuthOpen(true);
               } else {
-                setCurrentView('create');
+                handleNavigate('create');
               }
             }}
             onOpenCommentaryForPassage={(passage) => {
               setCommentaryInitialPassage(passage);
-              setCurrentView('commentary');
+              handleNavigate('commentary');
             }}
           />
         )}
@@ -234,11 +317,11 @@ export default function App() {
               if (!currentUser) {
                 setIsAuthOpen(true);
               } else {
-                setCurrentView('create');
+                handleNavigate('create');
               }
             }}
-            onOpenBiblePassage={(bookId, chapter) => {
-              setCurrentView('bible');
+            onOpenBiblePassage={() => {
+              handleNavigate('bible');
             }}
           />
         )}
@@ -262,11 +345,28 @@ export default function App() {
             onDeleteSermon={handleDeleteSermon}
             onCreateNew={() => {
               setWizardInitialData(null);
-              setCurrentView('create');
+              handleNavigate('create');
             }}
           />
         )}
       </div>
+
+      {/* Mobile Bottom Navigation for Android & Touch Devices */}
+      <MobileBottomNav
+        currentUser={currentUser}
+        currentView={currentView}
+        onNavigate={handleNavigate}
+        onOpenAuth={() => setIsAuthOpen(true)}
+      />
+
+      {/* Subscription Paywall Modal */}
+      <SubscriptionPaywallModal
+        isOpen={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        featureName={paywallFeatureName}
+        paymentInfo={paymentInfo}
+        userEmail={currentUser?.email}
+      />
 
       {/* Modals */}
       <AuthModal

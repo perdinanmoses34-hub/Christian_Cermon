@@ -1,11 +1,11 @@
 import React from 'react';
-import { BookOpen, Sparkles, Plus, Library, LogOut, User as UserIcon, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { BookOpen, Sparkles, Plus, Library, LogOut, User as UserIcon, LayoutDashboard, ChevronDown, Key } from 'lucide-react';
 import { User } from '../types/sermon';
 
 interface NavbarProps {
   currentUser: User | null;
   currentView: string;
-  onNavigate: (view: 'landing' | 'dashboard' | 'create' | 'history' | 'bible' | 'commentary') => void;
+  onNavigate: (view: 'landing' | 'dashboard' | 'create' | 'history' | 'bible' | 'commentary' | 'superadmin') => void;
   onOpenAuth: () => void;
   onLogout: () => void;
   onOpenHowItWorks: () => void;
@@ -20,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenHowItWorks,
 }) => {
   const [showUserMenu, setShowUserMenu] = React.useState(false);
+  const isSuperadmin = currentUser?.role === 'superadmin' || currentUser?.username === 'tn.timbu';
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
@@ -105,6 +106,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Library className="w-3.5 h-3.5" />
               Khotbah Saya
             </button>
+            {isSuperadmin && (
+              <button
+                onClick={() => onNavigate('superadmin')}
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
+                  currentView === 'superadmin'
+                    ? 'bg-amber-500 text-slate-950 font-black'
+                    : 'bg-amber-500/15 text-amber-400 border border-amber-500/40 hover:bg-amber-500/25'
+                }`}
+              >
+                <Key className="w-3.5 h-3.5" />
+                Panel Superadmin
+              </button>
+            )}
             <button
               onClick={onOpenHowItWorks}
               className="px-2.5 py-2 rounded-lg text-xs text-slate-400 hover:text-slate-200 transition-colors"
@@ -221,6 +235,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Library className="w-4 h-4 text-slate-400" />
                   Koleksi Khotbah Saya
                 </button>
+                {isSuperadmin && (
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      onNavigate('superadmin');
+                    }}
+                    className="w-full text-left px-4 py-2 text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold flex items-center gap-2.5 border-t border-b border-amber-500/20"
+                  >
+                    <Key className="w-4 h-4 text-amber-400" />
+                    Panel Superadmin
+                  </button>
+                )}
                 <div className="my-1 border-t border-slate-800" />
                 <button
                   onClick={() => {

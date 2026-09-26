@@ -121,8 +121,32 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  username?: string;
   church_name?: string;
-  role?: string;
+  role?: 'user' | 'superadmin';
+  subscription_status?: 'free' | 'premium' | 'expired';
+  subscription_expires_at?: string | null;
+  is_active?: boolean;
+  phone?: string;
+  created_at?: string;
+}
+
+export interface FeatureLocks {
+  aiSermonGeneration: boolean;
+  powerPointExport: boolean;
+  scholarlyCommentary: boolean;
+  sermonAiAssistant: boolean;
+  tolakiBible: boolean;
+  unlimitedSermons: boolean;
+}
+
+export interface PaymentInfo {
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  whatsappContact: string;
+  monthlyPrice: string;
+  yearlyPrice: string;
 }
 
 export interface SermonStats {
