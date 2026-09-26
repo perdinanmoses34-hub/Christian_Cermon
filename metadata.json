@@ -2,5 +2,7 @@
   "name": "Christian Sermon Builder",
   "description": "Aplikasi AI modern untuk menyusun khotbah Kristen yang sistematis, alkitabiah, dan relevan serta membuat slide presentasi PowerPoint otomatis.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

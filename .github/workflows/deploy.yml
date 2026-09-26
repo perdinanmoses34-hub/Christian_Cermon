@@ -33,7 +33,9 @@ jobs:
         run: npm install
 
       - name: Build site
-        run: npm run build
+        run: |
+          npm run build -- --base=/Christian_Cermon/
+          cp dist/index.html dist/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
