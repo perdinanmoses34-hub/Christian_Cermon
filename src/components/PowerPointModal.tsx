@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Presentation,
@@ -20,6 +20,9 @@ import {
   FileText,
   Sliders,
   SlidersHorizontal,
+  Image as ImageIcon,
+  RefreshCw,
+  Wand2,
 } from 'lucide-react';
 import {
   Sermon,
@@ -30,6 +33,7 @@ import {
 } from '../types/sermon';
 import { exportToPowerPoint } from '../services/pptxExporter';
 import { regeneratePowerPointApi } from '../services/api';
+import { getThematicSlideArtwork, CHRISTIAN_SCENES } from '../data/christianSlideThemes';
 
 interface PowerPointModalProps {
   sermon: Sermon;
@@ -80,20 +84,37 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
   const [font, setFont] = useState<PPTFont>(powerpoint.font || 'Inter');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '4:3'>(powerpoint.aspectRatio || '16:9');
   const [mobileTab, setMobileTab] = useState<'slide' | 'notes' | 'style'>('slide');
+  const [showImagePicker, setShowImagePicker] = useState(false);
 
-  const [slides, setSlides] = useState<PowerPointSlide[]>(
-    powerpoint.slides && powerpoint.slides.length > 0
-      ? powerpoint.slides
+  const getMappedSlides = (inputSlides?: PowerPointSlide[]): PowerPointSlide[] => {
+    const list: PowerPointSlide[] = (inputSlides && inputSlides.length > 0)
+      ? inputSlides
       : [
           {
             id: 's-1',
             title: sermon.title,
-            content: `${sermon.main_scripture}\n${sermon.big_idea}`,
-            speaker_notes: 'Buka khotbah dengan doa dan salam kepada jemaat.',
+            content: `• Nats Alkitab: ${sermon.main_scripture}\n• Tema Sentral: ${sermon.big_idea}\n• Sasaran Jemaat: Bertumbuh dalam iman dan ketaatan`,
+            speaker_notes: 'Buka khotbah dengan doa dan salam hangat kepada seluruh jemaat.',
             slide_type: 'title',
           },
-        ]
-  );
+        ];
+
+    return list.map((s, idx) => {
+      if (!s.image_url) {
+        const art = getThematicSlideArtwork(s.slide_type || (idx === 0 ? 'title' : 'point'), s.title);
+        return { ...s, image_url: art.url, image_prompt: s.image_prompt || art.prompt };
+      }
+      return s;
+    });
+  };
+
+  const [slides, setSlides] = useState<PowerPointSlide[]>(() => getMappedSlides(powerpoint.slides));
+
+  useEffect(() => {
+    if (sermon.powerpoint?.slides && sermon.powerpoint.slides.length > 0) {
+      setSlides(getMappedSlides(sermon.powerpoint.slides));
+    }
+  }, [sermon.id, sermon.powerpoint]);
 
   const [isExporting, setIsExporting] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -123,13 +144,39 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
     });
   };
 
+  const handleSelectScene = (sceneKey: string) => {
+    const scene = CHRISTIAN_SCENES[sceneKey];
+    if (!scene) return;
+    const updated = [...slides];
+    updated[currentSlideIndex] = {
+      ...updated[currentSlideIndex],
+      image_url: `data:image/svg+xml;utf8,${encodeURIComponent(scene.getSvg(currentSlide?.title))}`,
+      image_prompt: scene.prompt,
+    };
+    setSlides(updated);
+    setShowImagePicker(false);
+    onUpdateSermon({
+      ...sermon,
+      powerpoint: {
+        template,
+        colorPalette,
+        font,
+        aspectRatio,
+        slides: updated,
+      },
+    });
+  };
+
   const handleAddSlide = () => {
+    const art = getThematicSlideArtwork('point', 'Slide Baru');
     const newSlide: PowerPointSlide = {
       id: `slide-${Date.now()}`,
       title: 'Slide Baru',
-      content: '• Poin firman penting 1\n• Poin firman penting 2',
+      content: '• Prinsip kebenaran firman Allah\n• Penjelasan doktrin dan makna teologis\n• Ilustrasi analogi kehidupan nyata\n• Langkah ketaatan iman praktis',
       speaker_notes: 'Catatan pembicara untuk mimbar...',
       slide_type: 'point',
+      image_url: art.url,
+      image_prompt: art.prompt,
     };
     const updated = [...slides, newSlide];
     setSlides(updated);
@@ -470,7 +517,7 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
                 <div
                   key={s.id || idx}
                   onClick={() => setCurrentSlideIndex(idx)}
-                  className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all flex items-start gap-2.5 ${
+                  className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex items-start gap-2 ${
                     isSelected
                       ? 'border-amber-500 bg-slate-800 shadow-md ring-1 ring-amber-500/30'
                       : 'border-slate-800/80 bg-slate-900/60 hover:bg-slate-800/60'
@@ -483,6 +530,14 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
                   >
                     {idx + 1}
                   </span>
+                  {s.image_url && (
+                    <img
+                      src={s.image_url}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className="w-8 h-6 object-cover rounded shrink-0 border border-slate-700 mt-0.5"
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-200 truncate">{s.title}</p>
                     <p className="text-[10px] text-slate-400 truncate line-clamp-1 mt-0.5">
@@ -526,7 +581,7 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
             }`}
           >
             {/* Slide Navigation Header for Mobile & Desktop */}
-            <div className="flex items-center justify-between mb-3 text-xs">
+            <div className="flex items-center justify-between mb-2 text-xs">
               <button
                 onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                 disabled={currentSlideIndex === 0}
@@ -536,9 +591,20 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
                 <span className="hidden sm:inline">Sebelumnya</span>
               </button>
 
-              <span className="font-bold text-xs text-amber-400">
-                Slide {currentSlideIndex + 1} dari {slides.length}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs text-amber-400">
+                  Slide {currentSlideIndex + 1} dari {slides.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowImagePicker(!showImagePicker)}
+                  className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-[11px] font-semibold flex items-center gap-1 border border-amber-500/30 active:scale-95"
+                  title="Pilih ilustrasi rohani untuk slide ini"
+                >
+                  <ImageIcon className="w-3 h-3" />
+                  <span>Gambar Slide</span>
+                </button>
+              </div>
 
               <button
                 onClick={() => setCurrentSlideIndex(Math.min(slides.length - 1, currentSlideIndex + 1))}
@@ -550,54 +616,124 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
               </button>
             </div>
 
+            {/* Quick Image Picker Popover */}
+            {showImagePicker && (
+              <div className="mb-3 p-3 bg-slate-950 border border-amber-500/40 rounded-2xl shadow-xl space-y-2 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                    <Wand2 className="w-3 h-3" /> Pilih Ilustrasi Tema Rohani
+                  </span>
+                  <button
+                    onClick={() => setShowImagePicker(false)}
+                    className="text-[11px] text-slate-400 hover:text-white"
+                  >
+                    Tutup ✕
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(CHRISTIAN_SCENES).map(([key, sc]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => handleSelectScene(key)}
+                      className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-400 text-left transition-all group"
+                    >
+                      <img
+                        src={`data:image/svg+xml;utf8,${encodeURIComponent(sc.getSvg(currentSlide?.title))}`}
+                        alt={sc.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full aspect-video object-cover rounded-lg mb-1 border border-slate-700 group-hover:border-amber-400"
+                      />
+                      <p className="text-[11px] font-bold text-slate-200 group-hover:text-amber-300 truncate">
+                        {sc.title}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Slide Canvas */}
             <div
               className={`w-full ${
                 aspectRatio === '16:9' ? 'aspect-video' : 'aspect-4/3'
-              } rounded-2xl ${themeStyle.bg} border border-slate-700/80 shadow-2xl p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden transition-all`}
+              } rounded-2xl ${themeStyle.bg} border border-slate-700/80 shadow-2xl p-3.5 sm:p-5 flex flex-col justify-between relative overflow-hidden transition-all`}
             >
               <div className="absolute top-3 right-4 opacity-20 text-2xl font-cinzel">✝</div>
 
               {currentSlideIndex === 0 || currentSlide?.slide_type === 'title' ? (
-                // Title slide
-                <div className="my-auto text-center space-y-3">
-                  <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${themeStyle.accent}`}>
-                    CHRISTIAN SERMON BUILDER
-                  </span>
-                  <input
-                    type="text"
-                    value={currentSlide?.title || ''}
-                    onChange={(e) => updateCurrentSlide('title', e.target.value)}
-                    className={`w-full font-serif-title text-lg sm:text-2xl md:text-3xl font-bold ${themeStyle.text} text-center bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none`}
-                  />
-                  <div className={`w-12 h-1 ${themeStyle.line} mx-auto rounded-full`} />
-                  <textarea
-                    rows={3}
-                    value={currentSlide?.content || ''}
-                    onChange={(e) => updateCurrentSlide('content', e.target.value)}
-                    className={`w-full text-xs sm:text-sm ${themeStyle.subtext} text-center bg-transparent border border-transparent hover:border-slate-500/40 rounded-lg p-1 focus:outline-none resize-none`}
-                  />
-                </div>
-              ) : (
-                // Content slide
-                <div className="space-y-3 h-full flex flex-col">
-                  <div className="flex items-center gap-2 pb-1.5 border-b border-slate-700/40">
-                    <div className={`w-1 h-5 ${themeStyle.line} rounded-full`} />
+                // Title slide (Two-column with Featured Visual)
+                <div className="my-auto grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center h-full">
+                  <div className="md:col-span-7 text-left space-y-2 flex flex-col justify-center">
+                    <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${themeStyle.accent}`}>
+                      CHRISTIAN SERMON BUILDER
+                    </span>
                     <input
                       type="text"
                       value={currentSlide?.title || ''}
                       onChange={(e) => updateCurrentSlide('title', e.target.value)}
-                      className={`font-serif-title font-bold text-sm sm:text-lg ${themeStyle.text} bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none flex-1`}
+                      className={`w-full font-serif-title text-base sm:text-xl md:text-2xl font-bold ${themeStyle.text} bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none`}
+                    />
+                    <div className={`w-12 h-1 ${themeStyle.line} rounded-full`} />
+                    <textarea
+                      rows={3}
+                      value={currentSlide?.content || ''}
+                      onChange={(e) => updateCurrentSlide('content', e.target.value)}
+                      className={`w-full text-xs sm:text-sm ${themeStyle.subtext} bg-transparent border border-transparent hover:border-slate-500/40 rounded-lg p-1 focus:outline-none resize-none`}
                     />
                   </div>
 
-                  <div className={`flex-1 rounded-xl p-3 sm:p-4 ${themeStyle.card} border flex flex-col justify-center`}>
-                    <textarea
-                      rows={6}
-                      value={currentSlide?.content || ''}
-                      onChange={(e) => updateCurrentSlide('content', e.target.value)}
-                      className={`w-full h-full bg-transparent text-xs sm:text-sm ${themeStyle.text} leading-relaxed focus:outline-none resize-none font-medium`}
+                  {currentSlide?.image_url && (
+                    <div className="md:col-span-5 relative group flex items-center justify-center">
+                      <img
+                        src={currentSlide.image_url}
+                        alt={currentSlide.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full max-h-36 sm:max-h-48 md:max-h-56 aspect-video object-cover rounded-xl border border-amber-500/40 shadow-xl"
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Content slide (With Side Image)
+                <div className="space-y-2 sm:space-y-3 h-full flex flex-col justify-between">
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-slate-700/40">
+                    <div className={`w-1 h-5 ${themeStyle.line} rounded-full shrink-0`} />
+                    <input
+                      type="text"
+                      value={currentSlide?.title || ''}
+                      onChange={(e) => updateCurrentSlide('title', e.target.value)}
+                      className={`font-serif-title font-bold text-xs sm:text-base ${themeStyle.text} bg-transparent border-b border-transparent hover:border-slate-500 focus:outline-none flex-1 min-w-0 truncate`}
                     />
+                  </div>
+
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 min-h-0">
+                    {/* Content Box */}
+                    <div className={`${currentSlide?.image_url ? 'md:col-span-7' : 'md:col-span-12'} rounded-xl p-2.5 sm:p-3.5 ${themeStyle.card} border flex flex-col justify-center overflow-y-auto`}>
+                      <textarea
+                        rows={6}
+                        value={currentSlide?.content || ''}
+                        onChange={(e) => updateCurrentSlide('content', e.target.value)}
+                        className={`w-full h-full bg-transparent text-[11px] sm:text-xs leading-relaxed ${themeStyle.text} focus:outline-none resize-none font-medium`}
+                      />
+                    </div>
+
+                    {/* Image Preview Box */}
+                    {currentSlide?.image_url && (
+                      <div className="hidden sm:flex md:col-span-5 flex-col justify-center relative group min-h-0">
+                        <img
+                          src={currentSlide.image_url}
+                          alt={currentSlide.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full max-h-36 md:max-h-48 aspect-video object-cover rounded-xl border border-slate-700 shadow-md"
+                        />
+                        {currentSlide.image_prompt && (
+                          <p className="text-[9px] text-slate-400 line-clamp-1 italic mt-1 px-1">
+                            {currentSlide.image_prompt}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -628,13 +764,21 @@ export const PowerPointModal: React.FC<PowerPointModalProps> = ({
                     <button
                       key={s.id || idx}
                       onClick={() => setCurrentSlideIndex(idx)}
-                      className={`px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap shrink-0 transition-all active:scale-95 ${
+                      className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap shrink-0 transition-all active:scale-95 flex items-center gap-1.5 ${
                         isSelected
                           ? 'bg-amber-500 text-slate-950 font-bold border-amber-500 shadow-2xs'
                           : 'bg-slate-800 text-slate-300 border-slate-700'
                       }`}
                     >
-                      #{idx + 1} {s.title.slice(0, 14)}...
+                      {s.image_url && (
+                        <img
+                          src={s.image_url}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          className="w-5 h-4 object-cover rounded shrink-0"
+                        />
+                      )}
+                      <span>#{idx + 1} {s.title.slice(0, 12)}...</span>
                     </button>
                   );
                 })}

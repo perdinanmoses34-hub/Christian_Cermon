@@ -4,6 +4,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { getThematicSlideArtwork } from './src/data/christianSlideThemes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -629,21 +630,61 @@ app.delete('/api/sermons/:id', (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+// Helper to generate or resolve thematic slide artwork
+async function generateOrResolveSlideImage(
+  prompt: string,
+  slideType: string,
+  title: string,
+  theme: string
+): Promise<{ url: string; prompt: string }> {
+  const fallback = getThematicSlideArtwork(slideType, title || theme);
+  const effectivePrompt = prompt || fallback.prompt;
+
+  // Attempt Gemini image generation if API key is present
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-lite-image',
+        contents: effectivePrompt,
+        config: {
+          imageConfig: {
+            aspectRatio: '16:9',
+          },
+        },
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if ((part as any).inlineData?.data) {
+          const mimeType = (part as any).inlineData.mimeType || 'image/png';
+          return {
+            url: `data:${mimeType};base64,${(part as any).inlineData.data}`,
+            prompt: effectivePrompt,
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn(`Gemini image fallback for "${title}":`, err.message || err);
+    }
+  }
+
+  return {
+    url: fallback.url,
+    prompt: effectivePrompt,
+  };
+}
+
 // -------------------------------------------------------------
 // AI Sermon Generator Endpoint
 // -------------------------------------------------------------
-const SYSTEM_PROMPT = `You are an experienced Christian sermon preparation assistant. Your role is to help users prepare biblically responsible, structured, clear, practical, and context-sensitive Christian sermons.
+const SYSTEM_PROMPT = `You are a distinguished senior Christian theologian and homiletics professor. Your role is to help preachers prepare biblically responsible, deeply structured, clear, profound, and practically transformative Christian sermons.
 
-Always prioritize the meaning and context of the biblical text.
-Never invent Bible references, quotations, historical facts, theological claims presented as established facts, or real-life stories.
-Clearly distinguish between biblical text, interpretation, application, and hypothetical illustration.
+Always prioritize the authentic meaning, exegesis, and socio-historical context of the biblical text.
+Never invent Bible references, quotations, historical facts, or false claims.
+Clearly distinguish between biblical text, theological interpretation, concrete life application, and vivid illustrations.
 Adapt the sermon to the selected preaching method, audience, duration, and communication style.
-Every major sermon point must support the central Big Idea.
-Avoid unnecessary repetition.
-Use natural language that can be spoken from a pulpit.
-When theological interpretations differ among Christian traditions, acknowledge meaningful differences where relevant rather than pretending there is always only one interpretation.
-Do not claim certainty where the evidence is uncertain.
-The final sermon should help the preacher communicate Scripture faithfully and apply it responsibly to the congregation.
+Every major sermon point must support the central Big Idea with depth and gravitas.
+Do NOT write superficial or trivial content. Provide substantial theological insight, original language nuance (Greek/Hebrew where helpful), and pastoral wisdom.
+PowerPoint slides must be rich, substantive, and clear — NEVER just 2 or 3 short words or lines. Each slide must contain 4 to 6 detailed, well-articulated points.
 The generated sermon is an assistant-created draft and should be reviewed by the preacher before public use.`;
 
 app.post('/api/sermons/generate', async (req: Request, res: Response) => {
@@ -668,27 +709,39 @@ app.post('/api/sermons/generate', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Tema dan Ayat Alkitab Utama wajib diisi.' });
     }
 
-    const promptText = `Siapkan sebuah naskah khotbah Kristen yang utuh, mendalam, dan sistematis dengan spesifikasi berikut:
+    const promptText = `Siapkan sebuah naskah khotbah Kristen yang SANGAT MENDALAM, ALKITABIAH, BERBOBOT, dan SISTEMATIS beserta slide PowerPoint lengkap dengan spesifikasi:
 - Tema Khotbah: "${theme}"
 - Ayat Alkitab Utama: "${main_scripture}"
 - Ayat Pendukung: ${JSON.stringify(supporting_scriptures)}
-- Tujuan Khotbah: "${objective || 'Membimbing jemaat memahami dan melakukan firman Tuhan'}"
+- Tujuan Khotbah: "${objective || 'Membimbing jemaat memahami kebenaran firman dan hidup dalam ketaatan iman yang nyata'}"
 - Metode Khotbah: "${method}" (PENTING: Susun struktur dan alur argumen dengan disiplin metodologi ${method})
 - Target Jemaat: "${audience}"
-- Estimasi Durasi: "${duration}" (Sesuaikan kedalaman dan panjang teks khotbah agar pas dengan durasi ini)
+- Estimasi Durasi: "${duration}"
 - Bahasa: ${language === 'en' ? 'English' : 'Bahasa Indonesia'}
 - Gaya Bahasa: ${style.languageStyle}
 - Karakter: Skala Teologis-ke-Praktis ${style.theologicalToPractical}/100, Skala Serius-ke-Santai ${style.seriousToRelaxed}/100.
 
-Hasilkan naskah khotbah lengkap beserta outline PowerPoint yang siap pakai dalam format JSON dengan struktur yang ditentukan.
-Pastikan:
-1. Big Idea adalah 1 kalimat tesis sentral yang tajam dan berbobot.
-2. Konteks Alkitab mencakup penulis, penerima, konteks historis, latar belakang teks.
-3. Buat 2 sampai 4 poin utama. Setiap poin memiliki judul yang jelas, dasar ayat yang valid, penjelasan eksposisi/tafsiran, ilustrasi relevan, penerapan konkret, dan transisi ke poin berikutnya.
-4. Aplikasi praktis mencakup aspek pribadi, keluarga, pekerjaan, pelayanan, relasi, dan kehidupan rohani.
-5. Sediakan 3-5 pertanyaan refleksi yang menusuk hati dan ajakan konkret (call to action).
-6. Doa penutup yang khidmat dan relevan.
-7. PowerPoint slides lengkap dengan speaker notes (catatan pembicara) yang ringkas dan padat.`;
+PENTING - KUALITAS & KEDALAMAN:
+1. Naskah khotbah TIDAK BOLEH sederhana atau dangkal! Harus memiliki bobot teologis yang kokoh, wawasan konteks historis, dan sentuhan pastoral yang mengubahkan.
+2. Big Idea: 1 kalimat tesis sentral yang tajam, berwibawa, dan mudah diingat jemaat.
+3. Pendahuluan: Memuat kisah/realitas hidup jemaat (hook), jembatan konteks zaman Alkitab, dan deklarasi arah firman.
+4. Buat 3 sampai 4 poin utama. Setiap poin WAJIB memiliki:
+   - Judul poin yang kuat & inspiratif
+   - Dasar ayat yang valid
+   - Penjelasan eksposisi yang mendalam (uraikan makna teks, kata kunci asli Yunani/Ibrani jika relevan)
+   - Teologi & doktrin yang kokoh
+   - Ilustrasi atau analogi nyata yang menggugah hati
+   - Aplikasi konkret dalam kehidupan sehari-hari
+   - Transisi homiletika yang mengalir ke poin berikutnya
+5. Aplikasi praktis dalam 6 dimensi: Pribadi, Keluarga, Tempat Kerja/Studi, Pelayanan Gereja, Relasi Antarpribadi, Spiritualitas.
+6. Sediakan 3-5 pertanyaan refleksi yang menusuk hati dan ajakan konkret (call to action).
+7. Doa penutup yang khidmat dan pastoral.
+
+PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
+8. PENTING SEKALI: Setiap slide HARUS berisi naskah yang MENDALAM dan TERSTRUKTUR dalam 4 sampai 6 butir terinci (bullet points). JANGAN HANYA MEMBUAT 2 ATAU 3 BARIS PENDEK!
+   Setiap butir harus menjelaskan prinsip firman, ayat acuan, poin doktrinal, dan langkah praktis.
+9. Sediakan naskah speaker_notes yang lengkap dan mendalam untuk setiap slide sebagai panduan mimbar pengkhotbah.
+10. Untuk SETIAP SLIDE, buatlah field image_prompt yang sangat spesifik, artistik, dan relevan dengan tema firman (misal: "Salib kayu fajar merekah di atas bukit batu", "Naskah Alkitab kuno dengan nyala lilin dan ranting zaitun", "Gembala menuntun kawanan domba di lembah air tenang", "Jalan setapak iman mendaki puncak fajar", dsb.).`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -711,7 +764,7 @@ Pastikan:
             duration: { type: Type.STRING },
             big_idea: { type: Type.STRING, description: 'Satu kalimat pesan sentral khotbah' },
             objective: { type: Type.STRING },
-            introduction: { type: Type.STRING, description: 'Pendahuluan khotbah yang menarik dan menghubungkan ke Alkitab' },
+            introduction: { type: Type.STRING, description: 'Pendahuluan khotbah yang mendalam dan memikat' },
             context: { type: Type.STRING, description: 'Latar belakang historis, penulis, penerima, dan konteks sastra' },
             text_explanation: { type: Type.STRING, description: 'Penjelasan umum bagian teks Alkitab' },
             main_points: {
@@ -767,9 +820,10 @@ Pastikan:
                     properties: {
                       id: { type: Type.STRING },
                       title: { type: Type.STRING },
-                      content: { type: Type.STRING },
+                      content: { type: Type.STRING, description: 'Isi slide dalam 4-6 butir terinci (bullet points) yang mendalam' },
                       speaker_notes: { type: Type.STRING },
                       slide_type: { type: Type.STRING },
+                      image_prompt: { type: Type.STRING, description: 'Deskripsi adegan visual alkitabiah/spiritual untuk slide ini' },
                     },
                     required: ['title', 'content', 'speaker_notes'],
                   },
@@ -796,6 +850,30 @@ Pastikan:
 
     const text = response.text?.trim() || '{}';
     const parsedData = JSON.parse(text);
+
+    // Build finalized slides with generated/resolved slide images
+    const rawSlides = parsedData.powerpoint?.slides || [];
+    const resolvedSlides = await Promise.all(
+      rawSlides.map(async (s: any, idx: number) => {
+        const slideType = s.slide_type || (idx === 0 ? 'title' : 'point');
+        const slideTitle = s.title || `Slide ${idx + 1}`;
+        const artwork = await generateOrResolveSlideImage(
+          s.image_prompt,
+          slideType,
+          slideTitle,
+          theme
+        );
+        return {
+          id: s.id || `slide-${Date.now()}-${idx + 1}`,
+          title: slideTitle,
+          content: s.content || '',
+          speaker_notes: s.speaker_notes || '',
+          slide_type: slideType,
+          image_url: artwork.url,
+          image_prompt: artwork.prompt,
+        };
+      })
+    );
 
     // Build finalized sermon structure
     const sermonId = `sermon-${Date.now()}`;
@@ -839,13 +917,16 @@ Pastikan:
         colorPalette: parsedData.powerpoint?.colorPalette || 'navy',
         font: parsedData.powerpoint?.font || 'Inter',
         aspectRatio: parsedData.powerpoint?.aspectRatio || '16:9',
-        slides: (parsedData.powerpoint?.slides || []).map((s: any, idx: number) => ({
-          id: s.id || `slide-${idx + 1}`,
-          title: s.title || `Slide ${idx + 1}`,
-          content: s.content || '',
-          speaker_notes: s.speaker_notes || '',
-          slide_type: s.slide_type || (idx === 0 ? 'title' : 'point'),
-        })),
+        slides: resolvedSlides.length > 0 ? resolvedSlides : [
+          {
+            id: `slide-1`,
+            title: theme,
+            content: `• Tema Khotbah: ${theme}\n• Ayat Firman: ${main_scripture}\n• Sasaran Jemaat: ${audience}\n• Pendekatan Homiletika: ${method}`,
+            speaker_notes: 'Buka khotbah dengan doa dan salam kepada jemaat.',
+            slide_type: 'title',
+            ...getThematicSlideArtwork('title', theme),
+          }
+        ],
       },
       status: 'completed',
       created_at: new Date().toISOString(),
@@ -932,7 +1013,7 @@ app.post('/api/sermons/generate-powerpoint', async (req: Request, res: Response)
       return res.status(400).json({ error: 'Data khotbah diperlukan.' });
     }
 
-    const promptText = `Ubah naskah khotbah berikut menjadi slide PowerPoint profesional yang ringkas, berbobot, dan menarik:
+    const promptText = `Ubah naskah khotbah berikut menjadi slide PowerPoint profesional yang MENDALAM, BERBOBOT, DAN VISUAL:
 Judul: ${sermon.title}
 Teks Utama: ${sermon.main_scripture}
 Big Idea: ${sermon.big_idea}
@@ -943,11 +1024,12 @@ Pertanyaan Refleksi: ${JSON.stringify(sermon.reflection_questions)}
 Kesimpulan: ${sermon.conclusion}
 Doa: ${sermon.closing_prayer}
 
-Aturan Khusus Slide:
-1. Jangan memuat teks paragraf panjang ke dalam slide. Gunakan poin-poin ringkas (bullet points).
-2. Tuliskan naskah atau catatan pembicara yang komprehensif ke dalam field speaker_notes untuk setiap slide.
-3. Susun urutan slide: Judul, Ayat Utama, Big Idea, Pendahuluan, Poin-Poin Utama, Penjelasan Poin, Aplikasi, Pertanyaan Refleksi, Kesimpulan, Ajakan, Doa Penutup.
-4. Total slide berkisar antara 8 sampai 15 slide tergantung durasi.`;
+ATURAN PENTING SLIDE:
+1. PENTING: Setiap slide HARUS berisi naskah yang MENDALAM dan TERSTRUKTUR dalam 4 sampai 6 butir terinci (bullet points). JANGAN HANYA MEMBUAT 2 ATAU 3 BARIS PENDEK!
+   Uraikan prinsip firman, ayat, rincian teologis, dan tindakan praktis jemaat.
+2. Buatlah field image_prompt untuk setiap slide: berikan deskripsi visual artistik alkitabiah yang relevan dengan tema slide tersebut (misal: salib fajar keemasan, naskah alkitab kuno dengan lilin, mercusuar di atas karang, gembala dan domba di padang hijau, dsb.).
+3. Tuliskan naskah catatan pembicara (speaker_notes) yang lengkap dan komprehensif sebagai panduan mimbar pengkhotbah.
+4. Susun urutan 10 sampai 14 slide: Judul, Ayat Utama, Big Idea, Pendahuluan, Poin-Poin Utama, Penjelasan Poin, Aplikasi Praktis, Pertanyaan Refleksi, Kesimpulan, Ajakan, Doa Penutup.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -965,9 +1047,10 @@ Aturan Khusus Slide:
                 properties: {
                   id: { type: Type.STRING },
                   title: { type: Type.STRING },
-                  content: { type: Type.STRING },
+                  content: { type: Type.STRING, description: 'Isi slide dalam 4-6 butir terinci (bullet points) yang mendalam' },
                   speaker_notes: { type: Type.STRING },
                   slide_type: { type: Type.STRING },
+                  image_prompt: { type: Type.STRING, description: 'Deskripsi adegan visual alkitabiah/spiritual untuk slide ini' },
                 },
                 required: ['title', 'content', 'speaker_notes'],
               },
@@ -979,18 +1062,35 @@ Aturan Khusus Slide:
     });
 
     const parsed = JSON.parse(response.text?.trim() || '{"slides":[]}');
+    const rawSlides = parsed.slides || [];
+    const resolvedSlides = await Promise.all(
+      rawSlides.map(async (s: any, idx: number) => {
+        const slideType = s.slide_type || (idx === 0 ? 'title' : 'point');
+        const slideTitle = s.title || `Slide ${idx + 1}`;
+        const artwork = await generateOrResolveSlideImage(
+          s.image_prompt,
+          slideType,
+          slideTitle,
+          sermon.theme || sermon.title
+        );
+        return {
+          id: `slide-${Date.now()}-${idx + 1}`,
+          title: slideTitle,
+          content: s.content || '',
+          speaker_notes: s.speaker_notes || '',
+          slide_type: slideType,
+          image_url: artwork.url,
+          image_prompt: artwork.prompt,
+        };
+      })
+    );
+
     const updatedPowerPoint = {
       template: template || sermon.powerpoint?.template || 'Modern Church',
       colorPalette: colorPalette || sermon.powerpoint?.colorPalette || 'navy',
       font: font || sermon.powerpoint?.font || 'Inter',
       aspectRatio: aspectRatio || sermon.powerpoint?.aspectRatio || '16:9',
-      slides: parsed.slides.map((s: any, idx: number) => ({
-        id: `slide-${Date.now()}-${idx}`,
-        title: s.title,
-        content: s.content,
-        speaker_notes: s.speaker_notes,
-        slide_type: s.slide_type || (idx === 0 ? 'title' : 'point'),
-      })),
+      slides: resolvedSlides,
     };
 
     res.json({ powerpoint: updatedPowerPoint });

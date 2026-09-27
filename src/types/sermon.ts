@@ -63,6 +63,8 @@ export interface PowerPointSlide {
   content: string; // bullet points separated by newline
   speaker_notes: string;
   slide_type?: 'title' | 'scripture' | 'big_idea' | 'intro' | 'point' | 'application' | 'reflection' | 'conclusion' | 'cta' | 'prayer';
+  image_url?: string;
+  image_prompt?: string;
 }
 
 export type PPTTemplate =

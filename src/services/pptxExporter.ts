@@ -61,6 +61,39 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
   },
 };
 
+// Convert SVG data URL or other image URL to PNG data URL for reliable PptxGenJS embedding
+async function ensurePngDataUrl(imageUrl?: string): Promise<string | undefined> {
+  if (!imageUrl) return undefined;
+  if (imageUrl.startsWith('data:image/png') || imageUrl.startsWith('data:image/jpeg') || imageUrl.startsWith('http')) {
+    return imageUrl;
+  }
+  if (typeof window !== 'undefined' && imageUrl.startsWith('data:image/svg+xml')) {
+    return new Promise((resolve) => {
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 1280;
+          canvas.height = 720;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, 1280, 720);
+            resolve(canvas.toDataURL('image/png'));
+          } else {
+            resolve(imageUrl);
+          }
+        };
+        img.onerror = () => resolve(imageUrl);
+        img.src = imageUrl;
+      } catch {
+        resolve(imageUrl);
+      }
+    });
+  }
+  return imageUrl;
+}
+
 export async function exportToPowerPoint(
   sermonTitle: string,
   config: PowerPointConfig
@@ -77,67 +110,130 @@ export async function exportToPowerPoint(
   const theme = COLOR_THEMES[config.colorPalette] || COLOR_THEMES.navy;
   const fontFace = config.font || 'Inter';
 
-  config.slides.forEach((slideData: PowerPointSlide, index: number) => {
+  for (let index = 0; index < config.slides.length; index++) {
+    const slideData = config.slides[index];
     const slide = pptx.addSlide();
 
     // Set background color
     slide.background = { color: theme.bg };
 
     const isTitleSlide = index === 0 || slideData.slide_type === 'title';
+    const pngImage = await ensurePngDataUrl(slideData.image_url);
 
     if (isTitleSlide) {
-      // Header badge / Category
-      slide.addText('CHRISTIAN SERMON BUILDER', {
-        x: '8%',
-        y: '22%',
-        w: '84%',
-        h: 0.4,
-        fontSize: 12,
-        bold: true,
-        color: theme.accent,
-        fontFace,
-        charSpacing: 3,
-        align: 'center',
-      });
+      if (pngImage) {
+        // Two-column Title Slide with Featured Thematic Artwork
+        // Left Column: Title & Info
+        slide.addText('CHRISTIAN SERMON BUILDER', {
+          x: '6%',
+          y: '18%',
+          w: '48%',
+          h: 0.4,
+          fontSize: 11,
+          bold: true,
+          color: theme.accent,
+          fontFace,
+          charSpacing: 2,
+        });
 
-      // Big Title
-      slide.addText(slideData.title, {
-        x: '8%',
-        y: '30%',
-        w: '84%',
-        h: 1.8,
-        fontSize: 36,
-        bold: true,
-        color: theme.title,
-        fontFace,
-        align: 'center',
-        valign: 'middle',
-      });
+        slide.addText(slideData.title, {
+          x: '6%',
+          y: '25%',
+          w: '50%',
+          h: 2.2,
+          fontSize: 32,
+          bold: true,
+          color: theme.title,
+          fontFace,
+          valign: 'middle',
+        });
 
-      // Subtitle / Content
-      if (slideData.content) {
-        slide.addText(slideData.content, {
-          x: '12%',
+        slide.addShape(pptx.ShapeType.rect, {
+          x: '6%',
           y: '56%',
-          w: '76%',
-          h: 1.2,
-          fontSize: 18,
-          color: theme.subtext,
+          w: '12%',
+          h: 0.05,
+          fill: { color: theme.accent },
+          line: { color: theme.accent, width: 0 },
+        });
+
+        if (slideData.content) {
+          slide.addText(slideData.content, {
+            x: '6%',
+            y: '60%',
+            w: '50%',
+            h: 1.4,
+            fontSize: 15,
+            color: theme.subtext,
+            fontFace,
+            valign: 'top',
+          });
+        }
+
+        // Right Column: Thematic Image
+        try {
+          slide.addImage({
+            data: pngImage,
+            x: '59%',
+            y: '16%',
+            w: '35%',
+            h: '68%',
+            sizing: { type: 'cover', w: '35%', h: '68%' },
+          });
+        } catch (imgErr) {
+          console.warn('Could not add image to title slide', imgErr);
+        }
+      } else {
+        // Centered Title Slide (No Image)
+        slide.addText('CHRISTIAN SERMON BUILDER', {
+          x: '8%',
+          y: '22%',
+          w: '84%',
+          h: 0.4,
+          fontSize: 12,
+          bold: true,
+          color: theme.accent,
+          fontFace,
+          charSpacing: 3,
+          align: 'center',
+        });
+
+        slide.addText(slideData.title, {
+          x: '8%',
+          y: '30%',
+          w: '84%',
+          h: 1.8,
+          fontSize: 36,
+          bold: true,
+          color: theme.title,
           fontFace,
           align: 'center',
-          valign: 'top',
+          valign: 'middle',
         });
-      }
 
-      // Decorative Accent Line
-      slide.addShape(pptx.ShapeType.rect, {
-        x: '42%',
-        y: '52%',
-        w: '16%',
-        h: 0.05,
-        fill: { color: theme.accent },
-        line: { color: theme.accent, width: 0 },
-      });
+        slide.addShape(pptx.ShapeType.rect, {
+          x: '42%',
+          y: '52%',
+          w: '16%',
+          h: 0.05,
+          fill: { color: theme.accent },
+          line: { color: theme.accent, width: 0 },
+        });
+
+        if (slideData.content) {
+          slide.addText(slideData.content, {
+            x: '12%',
+            y: '56%',
+            w: '76%',
+            h: 1.2,
+            fontSize: 18,
+            color: theme.subtext,
+            fontFace,
+            align: 'center',
+            valign: 'top',
+          });
+        }
+      }
     } else {
       // Standard Slide Header
       slide.addShape(pptx.ShapeType.rect, {
@@ -155,7 +251,7 @@ export async function exportToPowerPoint(
         y: '8%',
         w: '84%',
         h: 0.7,
-        fontSize: 24,
+        fontSize: 22,
         bold: true,
         color: theme.title,
         fontFace,
@@ -191,11 +287,15 @@ export async function exportToPowerPoint(
         }
       }
 
+      const hasSlideImage = Boolean(pngImage);
+      const cardWidth = hasSlideImage ? '55%' : '88%';
+      const textWidth = hasSlideImage ? '50%' : '82%';
+
       // Content Box (Card background)
       slide.addShape(pptx.ShapeType.roundRect, {
         x: '6%',
         y: '22%',
-        w: '88%',
+        w: cardWidth,
         h: '68%',
         rectRadius: 0.1,
         fill: { color: theme.cardBg },
@@ -210,28 +310,43 @@ export async function exportToPowerPoint(
 
       if (lines.length > 0) {
         const textItems = lines.map(line => {
-          // Remove leading bullet characters if present
           const clean = line.replace(/^[•\-\*]\s*/, '').replace(/^\d+[\.\)]\s*/, '');
           return {
             text: clean,
             options: {
               bullet: lines.length > 1,
               breakLine: true,
-              fontSize: lines.length > 5 ? 14 : lines.length > 3 ? 16 : 18,
+              fontSize: lines.length > 5 ? 13 : lines.length > 3 ? 15 : 17,
               color: theme.body,
               fontFace,
-              paraSpaceAfter: 12,
+              paraSpaceAfter: lines.length > 5 ? 8 : 12,
             },
           };
         });
 
         slide.addText(textItems, {
-          x: '9%',
-          y: '26%',
-          w: '82%',
-          h: '60%',
-          valign: 'middle',
+          x: '8%',
+          y: '25%',
+          w: textWidth,
+          h: '62%',
+          valign: 'top',
         });
+      }
+
+      // Add Side Image if present
+      if (pngImage) {
+        try {
+          slide.addImage({
+            data: pngImage,
+            x: '64%',
+            y: '22%',
+            w: '30%',
+            h: '68%',
+            sizing: { type: 'cover', w: '30%', h: '68%' },
+          });
+        } catch (imgErr) {
+          console.warn('Could not add image to content slide', imgErr);
+        }
       }
     }
 
@@ -239,7 +354,7 @@ export async function exportToPowerPoint(
     if (slideData.speaker_notes) {
       slide.addNotes(slideData.speaker_notes);
     }
-  });
+  }
 
   const sanitizedFileName = (sermonTitle || 'Christian_Sermon')
     .replace(/[^a-zA-Z0-9_\-\s]/g, '')
