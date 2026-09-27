@@ -86,10 +86,22 @@ export const SermonOutlineModal: React.FC<SermonOutlineModalProps> = ({
   const generateOutlineText = (): string => {
     const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
     let text = `JUDUL KHOTBAH:\n${sermon.title}\n\n`;
+    if (sermon.preacher_name) {
+      text += `PENGKHOTBAH: ${sermon.preacher_name}\n\n`;
+    }
     text += `TEKS ALKITAB:\n${sermon.main_scripture}\n\n`;
     text += `METODE:\n${sermon.method.toUpperCase()}\n\n`;
     text += `BIG IDEA:\n${sermon.big_idea}\n\n`;
     text += `PENDAHULUAN:\n${sermon.introduction}\n\n`;
+    if (sermon.context) {
+      text += `KONTEKS ALKITAB & HISTORIS:\n${sermon.context}\n\n`;
+    }
+    if (sermon.expert_views) {
+      text += `PANDANGAN PARA PAKAR & TAFSIRAN TEOLOGIS:\n${sermon.expert_views}\n\n`;
+    }
+    if (sermon.original_language_analysis) {
+      text += `ANALISA KATA BAHASA ASLI (IBRANI / YUNANI):\n${sermon.original_language_analysis}\n\n`;
+    }
 
     sermon.main_points.forEach((pt, idx) => {
       const roman = romanNumerals[idx] || `${idx + 1}`;
@@ -210,6 +222,11 @@ export const SermonOutlineModal: React.FC<SermonOutlineModalProps> = ({
               <span className="font-bold text-xs sm:text-sm text-amber-800 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
                 {sermon.main_scripture}
               </span>
+              {sermon.preacher_name && (
+                <span className="text-[10px] sm:text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                  Pengkhotbah: {sermon.preacher_name}
+                </span>
+              )}
               <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">({sermon.method})</span>
             </div>
 
@@ -218,6 +235,24 @@ export const SermonOutlineModal: React.FC<SermonOutlineModalProps> = ({
                 <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">GAGASAN UTAMA (BIG IDEA)</p>
                 <p className="italic text-xs sm:text-sm text-amber-950 bg-amber-50/70 p-3 rounded-xl border border-amber-200/80 leading-relaxed font-medium">
                   "{sermon.big_idea}"
+                </p>
+              </div>
+            )}
+
+            {sermon.expert_views && (
+              <div>
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">PANDANGAN PAKAR & TAFSIRAN TEOLOGIS</p>
+                <p className="text-xs text-slate-700 bg-stone-100/70 p-3 rounded-xl border border-stone-200 leading-relaxed">
+                  {sermon.expert_views}
+                </p>
+              </div>
+            )}
+
+            {sermon.original_language_analysis && (
+              <div>
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">ANALISA KATA BAHASA ASLI (IBRANI / YUNANI)</p>
+                <p className="text-xs text-slate-700 bg-stone-100/70 p-3 rounded-xl border border-stone-200 leading-relaxed">
+                  {sermon.original_language_analysis}
                 </p>
               </div>
             )}

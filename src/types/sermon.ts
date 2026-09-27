@@ -62,7 +62,20 @@ export interface PowerPointSlide {
   title: string;
   content: string; // bullet points separated by newline
   speaker_notes: string;
-  slide_type?: 'title' | 'scripture' | 'big_idea' | 'intro' | 'point' | 'application' | 'reflection' | 'conclusion' | 'cta' | 'prayer';
+  slide_type?:
+    | 'title'
+    | 'intro'
+    | 'context'
+    | 'commentary'
+    | 'word_study'
+    | 'point'
+    | 'scripture'
+    | 'big_idea'
+    | 'application'
+    | 'reflection'
+    | 'conclusion'
+    | 'cta'
+    | 'prayer';
   image_url?: string;
   image_prompt?: string;
 }
@@ -94,6 +107,7 @@ export interface Sermon {
   user_id: string;
   title: string;
   theme: string;
+  preacher_name?: string;
   main_scripture: string;
   supporting_scriptures: string[];
   objective?: string;
@@ -106,6 +120,8 @@ export interface Sermon {
   introduction: string;
   context: string;
   text_explanation?: string;
+  expert_views?: string;
+  original_language_analysis?: string;
   main_points: MainPoint[];
   illustrations?: string[];
   applications?: PracticalApplications;

@@ -344,8 +344,13 @@ export function getThematicSlideArtwork(slideType?: string, title?: string): { u
     case 'title':
       key = 'title_cross_dawn';
       break;
+    case 'intro':
+      key = 'faith_pathway';
+      break;
     case 'scripture':
     case 'context':
+    case 'commentary':
+    case 'word_study':
       key = 'open_bible_light';
       break;
     case 'big_idea':
@@ -369,6 +374,7 @@ export function getThematicSlideArtwork(slideType?: string, title?: string): { u
       break;
     case 'reflection':
     case 'prayer':
+    case 'conclusion':
       key = 'prayer_hands_altar';
       break;
     default:

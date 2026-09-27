@@ -674,23 +674,71 @@ async function generateOrResolveSlideImage(
 }
 
 // -------------------------------------------------------------
+// Helper to sanitize sermon text and remove meta-instructions / stage cues
+// -------------------------------------------------------------
+function sanitizeSermonText(text: string): string {
+  if (!text) return '';
+  return text
+    .split('\n')
+    .filter((line) => {
+      const lower = line.trim().toLowerCase();
+      // Filter out lines that are meta-instructions/stage directions
+      if (
+        lower.startsWith('• buka dengan salam') ||
+        lower.startsWith('• sampaikan salam') ||
+        lower.startsWith('• beri salam') ||
+        lower.startsWith('• ajak jemaat') ||
+        lower.startsWith('• tersenyum') ||
+        lower.startsWith('• senyum') ||
+        lower.startsWith('• heningkan suasana') ||
+        lower.startsWith('• tutup dengan doa') ||
+        lower.startsWith('• persilakan jemaat') ||
+        lower.startsWith('• slide ini') ||
+        lower.startsWith('(buka dengan salam') ||
+        lower.startsWith('buka dengan salam') ||
+        lower.startsWith('ajak jemaat')
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .map((line) =>
+      line
+        .replace(/\((?:buka dengan salam|ajak jemaat berdiri|ajak jemaat membaca|tutup dengan doa|sampaikan salam hangat)[^\)]*\)/gi, '')
+        .trim()
+    )
+    .filter((line) => line.length > 0)
+    .join('\n');
+}
+
+// -------------------------------------------------------------
 // AI Sermon Generator Endpoint
 // -------------------------------------------------------------
-const SYSTEM_PROMPT = `You are a distinguished senior Christian theologian and homiletics professor. Your role is to help preachers prepare biblically responsible, deeply structured, clear, profound, and practically transformative Christian sermons.
+const SYSTEM_PROMPT = `You are a distinguished senior Christian theologian, biblicist, and homiletics professor. Your role is to help preachers prepare biblically sound, theologically profound, deeply expository, and practically transformative Christian sermons.
 
-Always prioritize the authentic meaning, exegesis, and socio-historical context of the biblical text.
-Never invent Bible references, quotations, historical facts, or false claims.
-Clearly distinguish between biblical text, theological interpretation, concrete life application, and vivid illustrations.
-Adapt the sermon to the selected preaching method, audience, duration, and communication style.
-Every major sermon point must support the central Big Idea with depth and gravitas.
-Do NOT write superficial or trivial content. Provide substantial theological insight, original language nuance (Greek/Hebrew where helpful), and pastoral wisdom.
-PowerPoint slides must be rich, substantive, and clear — NEVER just 2 or 3 short words or lines. Each slide must contain 4 to 6 detailed, well-articulated points.
-The generated sermon is an assistant-created draft and should be reviewed by the preacher before public use.`;
+Key Rules:
+1. Prioritize authentic biblical exegesis, grammatical-historical hermeneutics, and the socio-historical context of the text.
+2. In-depth analysis: Provide substantial theological insight, original Hebrew/Greek language nuances (with transliterations and lexical depth), historical-cultural background, and perspectives of revered church fathers/theologians (e.g. Augustine, Calvin, Spurgeon, Matthew Henry, John Stott).
+3. Do NOT write superficial, short, or trivial points. Every sermon point must feature a deep explanation (minimum 2-3 substantive paragraphs with doctrinal depth), clear scriptural basis, vivid illustration, and concrete life applications.
+4. STRICT PROHIBITION OF META-INSTRUCTIONS & STAGE DIRECTIONS:
+   - NEVER insert conversational cues, presentation instructions, or stage directions into slides or speaker notes (e.g., DO NOT write: "buka dengan salam", "ajak jemaat berdiri", "baca ayat bersama", "tersenyum", "tutup dengan doa", "slide ini berisi...", etc.).
+   - All slide contents and speaker_notes MUST be direct, substantive, authoritative preaching manuscripts and expository content ready to be delivered or presented!
+5. SLIDE POWERPOINT STRUCTURE REQUIREMENTS:
+   Every generated PowerPoint MUST strictly adhere to this exact required sequence:
+   - SLIDE 1 (slide_type: 'title'): Judul/Tema khotbah, ayat pendukung tema, nama pengkhotbah, dan sasaran jemaat.
+   - SLIDE 2 (slide_type: 'intro'): Pendahuluan (realitas pergumulan hidup jemaat masa kini, hook, relevansi pesan, dan arah khotbah dalam 4-6 butir padat).
+   - SLIDE 3 (slide_type: 'context'): Latar Belakang & Konteks Ayat (penulis, penerima mula-mula, latar sosio-historis, dan konteks kanonika dalam 4-6 butir padat).
+   - SLIDE 4 (slide_type: 'commentary'): Pandangan Para Pakar & Tafsiran Teologis (analisa eksegesis bapa gereja/teolog terkemuka terhadap ayat ini dalam 4-6 butir padat).
+   - SLIDE 5 (slide_type: 'word_study'): Analisa Kata Bahasa Asli Ibrani/Yunani (analisa leksikal kata-kata kunci asli, transliterasi, makna mendalam, implikasi iman dalam 4-6 butir padat).
+   - SLIDE 6 DAN SETERUSNYA (slide_type: 'point'): POKOK ISI / POIN PEMBAHASAN (Poin 1, Poin 2, Poin 3, dst., masing-masing 4-6 butir padat berisi kebenaran doktrinal, firman, ilustrasi, dan aplikasi nyata).
+   - SLIDE TERAKHIR (slide_type: 'conclusion'): Penutup (Rangkuman kebenaran firman/Big Idea, komitmen ketaatan iman, pokok doa penyerahan diri, dan doa penutup dalam 4-6 butir padat).
+6. Bullet points on each slide MUST be substantive (4 to 6 detailed points per slide). NEVER generate 2 or 3 short trivial lines!`;
 
 app.post('/api/sermons/generate', async (req: Request, res: Response) => {
   try {
     const {
       theme,
+      preacher_name = 'Hamba Tuhan',
       main_scripture,
       supporting_scriptures = [],
       objective = '',
@@ -709,8 +757,11 @@ app.post('/api/sermons/generate', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Tema dan Ayat Alkitab Utama wajib diisi.' });
     }
 
-    const promptText = `Siapkan sebuah naskah khotbah Kristen yang SANGAT MENDALAM, ALKITABIAH, BERBOBOT, dan SISTEMATIS beserta slide PowerPoint lengkap dengan spesifikasi:
+    const effectivePreacher = preacher_name || req.body.preacherName || 'Hamba Tuhan';
+
+    const promptText = `Siapkan sebuah naskah khotbah Kristen yang SANGAT MENDALAM, ALKITABIAH, BERBOBOT TINGGI, dan SISTEMATIS beserta slide PowerPoint profesional dengan spesifikasi:
 - Tema Khotbah: "${theme}"
+- Nama Pengkhotbah: "${effectivePreacher}"
 - Ayat Alkitab Utama: "${main_scripture}"
 - Ayat Pendukung: ${JSON.stringify(supporting_scriptures)}
 - Tujuan Khotbah: "${objective || 'Membimbing jemaat memahami kebenaran firman dan hidup dalam ketaatan iman yang nyata'}"
@@ -721,27 +772,61 @@ app.post('/api/sermons/generate', async (req: Request, res: Response) => {
 - Gaya Bahasa: ${style.languageStyle}
 - Karakter: Skala Teologis-ke-Praktis ${style.theologicalToPractical}/100, Skala Serius-ke-Santai ${style.seriousToRelaxed}/100.
 
-PENTING - KUALITAS & KEDALAMAN:
-1. Naskah khotbah TIDAK BOLEH sederhana atau dangkal! Harus memiliki bobot teologis yang kokoh, wawasan konteks historis, dan sentuhan pastoral yang mengubahkan.
+PENTING - KUALITAS & KEDALAMAN MATERI KHOTBAH:
+1. Naskah khotbah TIDAK BOLEH sederhana atau dangkal! Harus memiliki bobot teologis yang kokoh, wawasan konteks historis yang kaya, dan sentuhan pastoral yang mengubahkan.
 2. Big Idea: 1 kalimat tesis sentral yang tajam, berwibawa, dan mudah diingat jemaat.
-3. Pendahuluan: Memuat kisah/realitas hidup jemaat (hook), jembatan konteks zaman Alkitab, dan deklarasi arah firman.
-4. Buat 3 sampai 4 poin utama. Setiap poin WAJIB memiliki:
-   - Judul poin yang kuat & inspiratif
-   - Dasar ayat yang valid
-   - Penjelasan eksposisi yang mendalam (uraikan makna teks, kata kunci asli Yunani/Ibrani jika relevan)
-   - Teologi & doktrin yang kokoh
-   - Ilustrasi atau analogi nyata yang menggugah hati
-   - Aplikasi konkret dalam kehidupan sehari-hari
-   - Transisi homiletika yang mengalir ke poin berikutnya
-5. Aplikasi praktis dalam 6 dimensi: Pribadi, Keluarga, Tempat Kerja/Studi, Pelayanan Gereja, Relasi Antarpribadi, Spiritualitas.
-6. Sediakan 3-5 pertanyaan refleksi yang menusuk hati dan ajakan konkret (call to action).
-7. Doa penutup yang khidmat dan pastoral.
+3. Pendahuluan: Memuat realitas pergumulan hidup jemaat (hook), relevansi kebenaran firman di zaman modern, dan arah pesan khotbah.
+4. Latar Belakang & Konteks Teks: Uraikan konteks historis, penulis kitab, jemaat mula-mula penerima surat/kitab, dan latar belakang budayanya.
+5. Pandangan Para Pakar / Tafsiran Teologis: Berikan sintesis eksegesis dari bapa-bapa gereja dan penafsir ternama (misalnya John Calvin, Charles Spurgeon, Matthew Henry, John Stott, dsb.) terhadap teks ayat pokok ini.
+6. Analisa Kata Bahasa Asli (Ibrani/Yunani): Lakukan analisa kata mendalam terhadap kata-kata kunci asli dari teks (Ibrani untuk PL / Yunani untuk PB) beserta transliterasi alfabetis, akar kata/leksikon Strong's, dan makna teologis yang kaya.
+7. Poin Pembahasan Utama: Buat 3 sampai 4 poin utama. Setiap poin WAJIB memiliki penjelasan eksposisi yang MENDALAM dan KOMPREHENSIF (minimal 2-3 paragraf berbobot per poin), dasar ayat valid, tafsiran teologis, ilustrasi analogi hidup nyata, dan langkah aplikasi konkret.
+8. Aplikasi praktis dalam 6 dimensi: Pribadi, Keluarga, Tempat Kerja/Studi, Pelayanan Gereja, Relasi Antarpribadi, Spiritualitas.
+9. Sediakan 3-5 pertanyaan refleksi yang menusuk hati dan ajakan komitmen konkret (call to action).
+10. Doa penutup yang khidmat, agung, dan pastoral.
 
-PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
-8. PENTING SEKALI: Setiap slide HARUS berisi naskah yang MENDALAM dan TERSTRUKTUR dalam 4 sampai 6 butir terinci (bullet points). JANGAN HANYA MEMBUAT 2 ATAU 3 BARIS PENDEK!
-   Setiap butir harus menjelaskan prinsip firman, ayat acuan, poin doktrinal, dan langkah praktis.
-9. Sediakan naskah speaker_notes yang lengkap dan mendalam untuk setiap slide sebagai panduan mimbar pengkhotbah.
-10. Untuk SETIAP SLIDE, buatlah field image_prompt yang sangat spesifik, artistik, dan relevan dengan tema firman (misal: "Salib kayu fajar merekah di atas bukit batu", "Naskah Alkitab kuno dengan nyala lilin dan ranting zaitun", "Gembala menuntun kawanan domba di lembah air tenang", "Jalan setapak iman mendaki puncak fajar", dsb.).`;
+PENTING SEKALI - ATURAN STRUKTUR SLIDE POWERPOINT (WAJIB & KETAT):
+Susun urutan slide PowerPoint dengan STRUKTUR PERSIS berikut ini:
+- SLIDE 1 (slide_type: 'title'):
+  * Title: ${theme}
+  * Content:
+    • Tema Khotbah: ${theme}
+    • Ayat Alkitab: ${main_scripture} ${supporting_scriptures.length ? '(' + supporting_scriptures.join(', ') + ')' : ''}
+    • Pengkhotbah: ${effectivePreacher}
+    • Sasaran Jemaat: ${audience} (${duration})
+  * Speaker Notes: Naskah pengantar mimbar pembuka yang khidmat mengenai urgensi tema firman ini bagi hidup jemaat.
+- SLIDE 2 (slide_type: 'intro'):
+  * Title: Pendahuluan: Realitas Hidup & Arah Firman
+  * Content: 4 sampai 6 butir padat tentang dilema nyata jemaat, hook kehidupan masa kini, relevansi firman, dan tujuan pesan.
+  * Speaker Notes: Naskah eksposisi pengantar khotbah yang mendalam.
+- SLIDE 3 (slide_type: 'context'):
+  * Title: Latar Belakang & Konteks Ayat
+  * Content: 4 sampai 6 butir padat tentang konteks sosio-historis teks, penulis, jemaat mula-mula, dan posisi perikop dalam firman Tuhan.
+  * Speaker Notes: Uraian latar belakang historis dan teologis teks.
+- SLIDE 4 (slide_type: 'commentary'):
+  * Title: Pandangan Para Pakar & Tafsiran Teologis
+  * Content: 4 sampai 6 butir padat berisi tinjauan penafsiran bapa gereja dan teolog pakar terkemuka terhadap teks pokok ayat ini.
+  * Speaker Notes: Ulasan mendalam mengenai teologi dan perspektif tafsiran para pakar.
+- SLIDE 5 (slide_type: 'word_study'):
+  * Title: Analisa Kata Bahasa Asli (Ibrani / Yunani)
+  * Content: 4 sampai 6 butir padat menyelidiki kata-kata kunci teks dalam bahasa asli (Ibrani / Yunani), transliterasi, arti leksikal, dan implikasi teologisnya.
+  * Speaker Notes: Penjelasan homiletis mengenai kekayaan makna kata asli firman Allah.
+- SLIDE 6 DAN SETERUSNYA (slide_type: 'point'):
+  * POKOK ISI / POIN PEMBAHASAN:
+    - Slide 6: Poin I: [Judul Poin Pembahasan Pertama] (4-6 butir padat berisi prinsip doktrin firman, penjelasan teks, ilustrasi, dan tindakan konkret)
+    - Slide 7: Poin II: [Judul Poin Pembahasan Kedua] (4-6 butir padat)
+    - Slide 8: Poin III: [Judul Poin Pembahasan Ketiga] (4-6 butir padat)
+    (Jika ada Poin IV, jadikan Slide 9)
+  * Speaker Notes: Naskah khotbah mimbar komprehensif untuk setiap poin tersebut.
+- SLIDE TERAKHIR (slide_type: 'conclusion'):
+  * Title: Penutup & Komitmen Iman
+  * Content: 4 sampai 6 butir padat (Rangkuman kebenaran Big Idea, komitmen ketaatan iman nyata jemaat, pokok doa penyerahan diri, dan doa penutup).
+  * Speaker Notes: Naskah doa penutup yang khidmat, agung, dan meneguhkan jemaat.
+
+LARANGAN KERAS TENTANG PETUNJUK PANGGUNG (TIDAK PROFESIONAL):
+- DILARANG KERAS menyisipkan instruksi mimbar / petunjuk panggung / arahan tingkah laku (contoh yang DILARANG: "Buka dengan salam", "Ajak jemaat berdiri", "Baca ayat bersama", "Tersenyumlah", "Tutup dengan doa", "Slide ini berisi...", dsb.).
+- Seluruh isi teks slide dan speaker_notes HARUS 100% BERISI MATERI SUBSTANTIF EKSPOSISI DAN TEOLOGIS yang siap disajikan dan berwibawa!
+- Setiap slide WAJIB memiliki 4 sampai 6 butir terinci (bullet points) yang mendalam, JANGAN PERNAH membuat 2 atau 3 baris pendek saja!
+- Sediakan field image_prompt untuk setiap slide dengan deskripsi karya seni visual rohani yang artistik.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -754,6 +839,7 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
           properties: {
             title: { type: Type.STRING, description: 'Judul khotbah yang menarik dan alkitabiah' },
             theme: { type: Type.STRING },
+            preacher_name: { type: Type.STRING },
             main_scripture: { type: Type.STRING },
             supporting_scriptures: {
               type: Type.ARRAY,
@@ -762,10 +848,12 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
             method: { type: Type.STRING },
             audience: { type: Type.STRING },
             duration: { type: Type.STRING },
-            big_idea: { type: Type.STRING, description: 'Satu kalimat pesan sentral khotbah' },
+            big_idea: { type: Type.STRING, description: 'Satu kalimat pesan sentral khotbah yang tajam' },
             objective: { type: Type.STRING },
-            introduction: { type: Type.STRING, description: 'Pendahuluan khotbah yang mendalam dan memikat' },
-            context: { type: Type.STRING, description: 'Latar belakang historis, penulis, penerima, dan konteks sastra' },
+            introduction: { type: Type.STRING, description: 'Pendahuluan khotbah yang mendalam, realitas hidup, dan memikat' },
+            context: { type: Type.STRING, description: 'Latar belakang sosio-historis, penulis, penerima, dan konteks kanonika' },
+            expert_views: { type: Type.STRING, description: 'Pandangan para pakar/tafsiran bapa gereja dan teolog ternama' },
+            original_language_analysis: { type: Type.STRING, description: 'Analisa kata dari bahasa asli Ibrani atau Yunani dengan transliterasi dan makna leksikal mendalam' },
             text_explanation: { type: Type.STRING, description: 'Penjelasan umum bagian teks Alkitab' },
             main_points: {
               type: Type.ARRAY,
@@ -774,7 +862,7 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
                 properties: {
                   id: { type: Type.STRING },
                   title: { type: Type.STRING },
-                  explanation: { type: Type.STRING },
+                  explanation: { type: Type.STRING, description: 'Penjelasan eksposisi mendalam minimal 2-3 paragraf berbobot' },
                   biblical_basis: { type: Type.ARRAY, items: { type: Type.STRING } },
                   interpretation: { type: Type.STRING },
                   illustration: { type: Type.STRING },
@@ -821,7 +909,7 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
                       id: { type: Type.STRING },
                       title: { type: Type.STRING },
                       content: { type: Type.STRING, description: 'Isi slide dalam 4-6 butir terinci (bullet points) yang mendalam' },
-                      speaker_notes: { type: Type.STRING },
+                      speaker_notes: { type: Type.STRING, description: 'Naskah mimbar substantif tanpa instruksi panggung' },
                       slide_type: { type: Type.STRING },
                       image_prompt: { type: Type.STRING, description: 'Deskripsi adegan visual alkitabiah/spiritual untuk slide ini' },
                     },
@@ -837,6 +925,8 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
             'big_idea',
             'introduction',
             'context',
+            'expert_views',
+            'original_language_analysis',
             'main_points',
             'reflection_questions',
             'call_to_action',
@@ -851,12 +941,14 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
     const text = response.text?.trim() || '{}';
     const parsedData = JSON.parse(text);
 
-    // Build finalized slides with generated/resolved slide images
+    // Build finalized slides with sanitized text and resolved slide images
     const rawSlides = parsedData.powerpoint?.slides || [];
     const resolvedSlides = await Promise.all(
       rawSlides.map(async (s: any, idx: number) => {
         const slideType = s.slide_type || (idx === 0 ? 'title' : 'point');
         const slideTitle = s.title || `Slide ${idx + 1}`;
+        const cleanContent = sanitizeSermonText(s.content || '');
+        const cleanNotes = sanitizeSermonText(s.speaker_notes || '');
         const artwork = await generateOrResolveSlideImage(
           s.image_prompt,
           slideType,
@@ -866,8 +958,8 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
         return {
           id: s.id || `slide-${Date.now()}-${idx + 1}`,
           title: slideTitle,
-          content: s.content || '',
-          speaker_notes: s.speaker_notes || '',
+          content: cleanContent,
+          speaker_notes: cleanNotes,
           slide_type: slideType,
           image_url: artwork.url,
           image_prompt: artwork.prompt,
@@ -882,6 +974,7 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
       user_id: getUserIdFromRequest(req),
       title: parsedData.title || theme,
       theme,
+      preacher_name: effectivePreacher,
       main_scripture,
       supporting_scriptures: parsedData.supporting_scriptures || supporting_scriptures,
       objective: parsedData.objective || objective,
@@ -893,6 +986,8 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
       big_idea: parsedData.big_idea || '',
       introduction: parsedData.introduction || '',
       context: parsedData.context || '',
+      expert_views: parsedData.expert_views || '',
+      original_language_analysis: parsedData.original_language_analysis || '',
       text_explanation: parsedData.text_explanation || '',
       main_points: (parsedData.main_points || []).map((pt: any, idx: number) => ({
         id: pt.id || `point-${idx + 1}`,
@@ -921,8 +1016,8 @@ PENTING - SLIDE POWERPOINT (10 - 14 SLIDE):
           {
             id: `slide-1`,
             title: theme,
-            content: `• Tema Khotbah: ${theme}\n• Ayat Firman: ${main_scripture}\n• Sasaran Jemaat: ${audience}\n• Pendekatan Homiletika: ${method}`,
-            speaker_notes: 'Buka khotbah dengan doa dan salam kepada jemaat.',
+            content: `• Tema Khotbah: ${theme}\n• Ayat Firman: ${main_scripture}\n• Pengkhotbah: ${effectivePreacher}\n• Sasaran Jemaat: ${audience} (${duration})`,
+            speaker_notes: `Pesan firman ini memanggil setiap umat Tuhan untuk merespons kebenaran Allah dengan segenap hati dan ketaatan yang nyata.`,
             slide_type: 'title',
             ...getThematicSlideArtwork('title', theme),
           }
@@ -1013,23 +1108,67 @@ app.post('/api/sermons/generate-powerpoint', async (req: Request, res: Response)
       return res.status(400).json({ error: 'Data khotbah diperlukan.' });
     }
 
-    const promptText = `Ubah naskah khotbah berikut menjadi slide PowerPoint profesional yang MENDALAM, BERBOBOT, DAN VISUAL:
+    const preacherName = sermon.preacher_name || 'Hamba Tuhan';
+    const promptText = `Ubah naskah khotbah berikut menjadi slide PowerPoint profesional yang SANGAT MENDALAM, BERBOBOT TINGGI, DAN SISTEMATIS:
 Judul: ${sermon.title}
+Tema: ${sermon.theme || sermon.title}
+Pengkhotbah: ${preacherName}
 Teks Utama: ${sermon.main_scripture}
+Ayat Pendukung: ${JSON.stringify(sermon.supporting_scriptures || [])}
 Big Idea: ${sermon.big_idea}
 Pendahuluan: ${sermon.introduction}
-Poin Utama: ${JSON.stringify(sermon.main_points)}
-Aplikasi: ${JSON.stringify(sermon.applications)}
+Konteks Historis: ${sermon.context}
+Pandangan Pakar/Tafsiran: ${sermon.expert_views || ''}
+Analisa Bahasa Asli (Ibrani/Yunani): ${sermon.original_language_analysis || ''}
+Poin-Poin Utama: ${JSON.stringify(sermon.main_points)}
+Aplikasi Praktis: ${JSON.stringify(sermon.applications)}
 Pertanyaan Refleksi: ${JSON.stringify(sermon.reflection_questions)}
 Kesimpulan: ${sermon.conclusion}
-Doa: ${sermon.closing_prayer}
+Doa Penutup: ${sermon.closing_prayer}
 
-ATURAN PENTING SLIDE:
-1. PENTING: Setiap slide HARUS berisi naskah yang MENDALAM dan TERSTRUKTUR dalam 4 sampai 6 butir terinci (bullet points). JANGAN HANYA MEMBUAT 2 ATAU 3 BARIS PENDEK!
-   Uraikan prinsip firman, ayat, rincian teologis, dan tindakan praktis jemaat.
-2. Buatlah field image_prompt untuk setiap slide: berikan deskripsi visual artistik alkitabiah yang relevan dengan tema slide tersebut (misal: salib fajar keemasan, naskah alkitab kuno dengan lilin, mercusuar di atas karang, gembala dan domba di padang hijau, dsb.).
-3. Tuliskan naskah catatan pembicara (speaker_notes) yang lengkap dan komprehensif sebagai panduan mimbar pengkhotbah.
-4. Susun urutan 10 sampai 14 slide: Judul, Ayat Utama, Big Idea, Pendahuluan, Poin-Poin Utama, Penjelasan Poin, Aplikasi Praktis, Pertanyaan Refleksi, Kesimpulan, Ajakan, Doa Penutup.`;
+PENTING SEKALI - ATURAN STRUKTUR SLIDE POWERPOINT (WAJIB & KETAT):
+Susun urutan slide PowerPoint dengan STRUKTUR PERSIS berikut ini:
+- SLIDE 1 (slide_type: 'title'):
+  * Title: ${sermon.theme || sermon.title}
+  * Content:
+    • Tema Khotbah: ${sermon.theme || sermon.title}
+    • Ayat Alkitab: ${sermon.main_scripture}
+    • Pengkhotbah: ${preacherName}
+    • Sasaran Jemaat: ${sermon.audience || 'Umum'} (${sermon.duration || '30 menit'})
+  * Speaker Notes: Naskah pengantar mimbar pembuka yang khidmat mengenai pesan sentral firman Tuhan.
+- SLIDE 2 (slide_type: 'intro'):
+  * Title: Pendahuluan: Realitas Hidup & Arah Firman
+  * Content: 4 sampai 6 butir padat tentang dilema nyata jemaat, hook kehidupan masa kini, relevansi firman, dan tujuan pesan.
+  * Speaker Notes: Naskah eksposisi pengantar khotbah yang mendalam.
+- SLIDE 3 (slide_type: 'context'):
+  * Title: Latar Belakang & Konteks Ayat
+  * Content: 4 sampai 6 butir padat tentang konteks sosio-historis teks, penulis, jemaat mula-mula, dan posisi perikop dalam firman Tuhan.
+  * Speaker Notes: Uraian latar belakang historis dan teologis teks.
+- SLIDE 4 (slide_type: 'commentary'):
+  * Title: Pandangan Para Pakar & Tafsiran Teologis
+  * Content: 4 sampai 6 butir padat berisi tinjauan penafsiran bapa gereja dan teolog pakar terkemuka terhadap teks pokok ayat ini.
+  * Speaker Notes: Ulasan mendalam mengenai teologi dan perspektif tafsiran para pakar.
+- SLIDE 5 (slide_type: 'word_study'):
+  * Title: Analisa Kata Bahasa Asli (Ibrani / Yunani)
+  * Content: 4 sampai 6 butir padat menyelidiki kata-kata kunci teks dalam bahasa asli (Ibrani / Yunani), transliterasi, arti leksikal, dan implikasi teologisnya.
+  * Speaker Notes: Penjelasan homiletis mengenai kekayaan makna kata asli firman Allah.
+- SLIDE 6 DAN SETERUSNYA (slide_type: 'point'):
+  * POKOK ISI / POIN PEMBAHASAN:
+    - Slide 6: Poin I: [Judul Poin Pembahasan Pertama] (4-6 butir padat berisi prinsip doktrin firman, penjelasan teks, ilustrasi, dan tindakan konkret)
+    - Slide 7: Poin II: [Judul Poin Pembahasan Kedua] (4-6 butir padat)
+    - Slide 8: Poin III: [Judul Poin Pembahasan Ketiga] (4-6 butir padat)
+    (Jika ada Poin IV, jadikan Slide 9)
+  * Speaker Notes: Naskah khotbah mimbar komprehensif untuk setiap poin tersebut.
+- SLIDE TERAKHIR (slide_type: 'conclusion'):
+  * Title: Penutup & Komitmen Iman
+  * Content: 4 sampai 6 butir padat (Rangkuman kebenaran Big Idea, komitmen ketaatan iman nyata jemaat, pokok doa penyerahan diri, dan doa penutup).
+  * Speaker Notes: Naskah doa penutup yang khidmat, agung, dan meneguhkan jemaat.
+
+LARANGAN KERAS:
+- DILARANG KERAS menyisipkan instruksi mimbar / petunjuk panggung / arahan tingkah laku (contoh yang DILARANG: "Buka dengan salam", "Ajak jemaat berdiri", "Baca ayat bersama", "Tersenyumlah", "Tutup dengan doa", "Slide ini berisi...", dsb.).
+- Seluruh isi teks slide dan speaker_notes HARUS 100% BERISI MATERI SUBSTANTIF EKSPOSISI DAN TEOLOGIS yang siap disajikan!
+- Setiap slide WAJIB memiliki 4 sampai 6 butir terinci (bullet points) yang mendalam, JANGAN membuat 2 atau 3 baris pendek saja!
+- Sediakan field image_prompt untuk setiap slide dengan deskripsi karya seni visual rohani yang artistik.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -1076,8 +1215,8 @@ ATURAN PENTING SLIDE:
         return {
           id: `slide-${Date.now()}-${idx + 1}`,
           title: slideTitle,
-          content: s.content || '',
-          speaker_notes: s.speaker_notes || '',
+          content: sanitizeSermonText(s.content || ''),
+          speaker_notes: sanitizeSermonText(s.speaker_notes || ''),
           slide_type: slideType,
           image_url: artwork.url,
           image_prompt: artwork.prompt,

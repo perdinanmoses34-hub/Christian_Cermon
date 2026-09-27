@@ -61,24 +61,24 @@ const COLOR_THEMES: Record<string, ColorTheme> = {
   },
 };
 
-// Convert SVG data URL or other image URL to PNG data URL for reliable PptxGenJS embedding
+// Convert SVG, WebP, or other data URLs to PNG data URL for reliable PptxGenJS embedding
 async function ensurePngDataUrl(imageUrl?: string): Promise<string | undefined> {
   if (!imageUrl) return undefined;
-  if (imageUrl.startsWith('data:image/png') || imageUrl.startsWith('data:image/jpeg') || imageUrl.startsWith('http')) {
+  if (imageUrl.startsWith('data:image/png') || imageUrl.startsWith('data:image/jpeg') || (imageUrl.startsWith('http') && !imageUrl.endsWith('.svg'))) {
     return imageUrl;
   }
-  if (typeof window !== 'undefined' && imageUrl.startsWith('data:image/svg+xml')) {
+  if (typeof window !== 'undefined') {
     return new Promise((resolve) => {
       try {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          canvas.width = 1280;
-          canvas.height = 720;
+          canvas.width = img.naturalWidth || 1280;
+          canvas.height = img.naturalHeight || 720;
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            ctx.drawImage(img, 0, 0, 1280, 720);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             resolve(canvas.toDataURL('image/png'));
           } else {
             resolve(imageUrl);
@@ -261,13 +261,17 @@ export async function exportToPowerPoint(
       // Slide Subtitle / Category
       if (slideData.slide_type) {
         const typeLabels: Record<string, string> = {
+          title: 'TEMA KHOTBAH',
+          intro: 'PENDAHULUAN',
+          context: 'LATAR BELAKANG & KONTEKS AYAT',
+          commentary: 'PANDANGAN PAKAR & TAFSIRAN TEOLOGIS',
+          word_study: 'ANALISA KATA BAHASA ASLI (IBRANI / YUNANI)',
+          point: 'POKOK ISI / POIN PEMBAHASAN',
           scripture: 'AYAT FIRMAN TUHAN',
           big_idea: 'GAGASAN UTAMA (BIG IDEA)',
-          intro: 'PENDAHULUAN',
-          point: 'POIN KHOTBAH',
           application: 'PENERAPAN PRAKTIS',
           reflection: 'PERTANYAAN REFLEKSI',
-          conclusion: 'KESIMPULAN',
+          conclusion: 'PENUTUP & KOMITMEN IMAN',
           cta: 'AJAKAN / CALL TO ACTION',
           prayer: 'DOA PENUTUP',
         };

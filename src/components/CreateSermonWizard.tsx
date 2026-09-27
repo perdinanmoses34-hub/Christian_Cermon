@@ -112,6 +112,7 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
 }) => {
   // Form State
   const [theme, setTheme] = useState(initialData?.theme || '');
+  const [preacherName, setPreacherName] = useState(currentUser?.name || '');
   const [mainScripture, setMainScripture] = useState(initialData?.scripture || '');
   const [supportingScriptures, setSupportingScriptures] = useState<string[]>(['']);
   const [objective, setObjective] = useState(initialData?.objective || '');
@@ -184,6 +185,7 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
     try {
       const payload = {
         theme,
+        preacher_name: preacherName.trim() || currentUser?.name || 'Hamba Tuhan',
         main_scripture: mainScripture,
         supporting_scriptures: cleanSupporting,
         objective,
@@ -321,7 +323,7 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Tema Khotbah */}
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1">
@@ -336,7 +338,7 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
                 className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 font-medium"
               />
               <p className="text-[10px] text-slate-400 mt-1">
-                Gagasan sentral atau tema pokok firman Tuhan.
+                Gagasan sentral tema firman Tuhan.
               </p>
             </div>
 
@@ -354,7 +356,24 @@ export const CreateSermonWizard: React.FC<CreateSermonWizardProps> = ({
                 className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 font-medium"
               />
               <p className="text-[10px] text-slate-400 mt-1">
-                Perikop atau ayat kunci yang akan dieksposisi.
+                Perikop atau ayat kunci yang dieksposisi.
+              </p>
+            </div>
+
+            {/* Nama Pengkhotbah */}
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">
+                Nama Pengkhotbah
+              </label>
+              <input
+                type="text"
+                value={preacherName}
+                onChange={(e) => setPreacherName(e.target.value)}
+                placeholder="Contoh: Pdt. Dr. Yohanes / Ev. Markus"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 font-medium"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                Dicantumkan pada Slide 1 PowerPoint & naskah.
               </p>
             </div>
           </div>

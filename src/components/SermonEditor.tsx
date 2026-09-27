@@ -162,6 +162,20 @@ export const SermonEditor: React.FC<SermonEditorProps> = ({
         setter: (val) => updateField('context', val),
       };
     }
+    if (activeSection === 'expert_views') {
+      return {
+        name: 'Pandangan Pakar & Tafsiran Teologis',
+        content: sermon.expert_views || '',
+        setter: (val) => updateField('expert_views', val),
+      };
+    }
+    if (activeSection === 'original_language_analysis') {
+      return {
+        name: 'Analisa Kata Bahasa Asli (Ibrani / Yunani)',
+        content: sermon.original_language_analysis || '',
+        setter: (val) => updateField('original_language_analysis', val),
+      };
+    }
     if (activeSection === 'text_explanation') {
       return {
         name: 'Penjelasan Teks',
@@ -508,6 +522,34 @@ Christian Sermon Builder | Soli Deo Gloria`;
 
               <button
                 onClick={() => {
+                  setActiveSection('expert_views');
+                  setMobileTab('editor');
+                }}
+                className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-colors flex items-center justify-between ${
+                  activeSection === 'expert_views'
+                    ? 'bg-amber-100 text-amber-900 font-bold border-l-4 border-amber-600'
+                    : 'text-slate-700 hover:bg-stone-50'
+                }`}
+              >
+                <span>Pandangan Pakar/Tafsiran</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveSection('original_language_analysis');
+                  setMobileTab('editor');
+                }}
+                className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-colors flex items-center justify-between ${
+                  activeSection === 'original_language_analysis'
+                    ? 'bg-amber-100 text-amber-900 font-bold border-l-4 border-amber-600'
+                    : 'text-slate-700 hover:bg-stone-50'
+                }`}
+              >
+                <span>Analisa Kata Asli (Ibrani/Yunani)</span>
+              </button>
+
+              <button
+                onClick={() => {
                   setActiveSection('text_explanation');
                   setMobileTab('editor');
                 }}
@@ -777,6 +819,46 @@ Christian Sermon Builder | Soli Deo Gloria`;
                 rows={7}
                 value={sermon.context}
                 onChange={(e) => updateField('context', e.target.value)}
+                className={`w-full p-3.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 ${getFontSizeClass()}`}
+              />
+            </div>
+          )}
+
+          {activeSection === 'expert_views' && (
+            <div className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="border-b border-stone-100 pb-2">
+                <h3 className="font-serif-title font-bold text-sm sm:text-base text-slate-900">
+                  Pandangan Para Pakar & Tafsiran Teologis
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500">
+                Eksegesis dan wawasan penafsiran dari para bapa gereja serta teolog ternama mengenai ayat pokok ini.
+              </p>
+              <textarea
+                rows={7}
+                value={sermon.expert_views || ''}
+                onChange={(e) => updateField('expert_views', e.target.value)}
+                placeholder="Tuliskan pandangan teolog dan tafsiran para pakar..."
+                className={`w-full p-3.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 ${getFontSizeClass()}`}
+              />
+            </div>
+          )}
+
+          {activeSection === 'original_language_analysis' && (
+            <div className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="border-b border-stone-100 pb-2">
+                <h3 className="font-serif-title font-bold text-sm sm:text-base text-slate-900">
+                  Analisa Kata Bahasa Asli (Ibrani / Yunani)
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500">
+                Penyelidikan kata-kata kunci dalam teks naskah asli (Ibrani/Yunani), transliterasi, akar kata Strong's, dan nuansa maknanya.
+              </p>
+              <textarea
+                rows={7}
+                value={sermon.original_language_analysis || ''}
+                onChange={(e) => updateField('original_language_analysis', e.target.value)}
+                placeholder="Tuliskan analisa kata asli dari bahasa Ibrani atau Yunani..."
                 className={`w-full p-3.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 ${getFontSizeClass()}`}
               />
             </div>
