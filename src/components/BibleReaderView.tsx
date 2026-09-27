@@ -12,8 +12,6 @@ import {
   ChevronRight,
   ArrowRight,
   Filter,
-  Layers,
-  X,
 } from 'lucide-react';
 import { BibleVersion, BibleVerse } from '../types/bible';
 import { BIBLE_BOOKS, CURATED_BIBLE_CHAPTERS } from '../data/bibleData';
@@ -80,95 +78,111 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-3.5 sm:space-y-6 animate-fadeIn pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
-      {/* Desktop Header Banner */}
-      <div className="hidden sm:flex bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-5 sm:p-7 text-white border border-slate-800 shadow-xl flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-fadeIn">
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[11px] font-semibold mb-2">
-            <BookOpen className="w-3 h-3" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-semibold mb-3">
+            <BookOpen className="w-3.5 h-3.5" />
             Alkitab Multi-Versi
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-serif-title font-bold text-white tracking-tight">
-            Alkitab TB, KJV & Bahasa Tolaki
+          <h1 className="text-2xl sm:text-3xl font-serif-title font-bold text-white tracking-tight">
+            Alkitab TB, King James & Bahasa Tolaki
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Terjemahan Baru LAI (Indonesia), King James Version (Inggris), dan Bahasa Daerah Tolaki (Sulawesi Tenggara).
+            Eksplorasi firman Tuhan dalam bahasa Indonesia (TB-LAI), bahasa Inggris klasik (King James Version), dan bahasa daerah Tolaki (Sulawesi Tenggara).
           </p>
         </div>
 
+        {/* Quick Action Button */}
         <button
           onClick={() => onUseForSermon(`${chapterData.bookName} ${chapterData.chapter}:1-6`, chapterData.bookName)}
-          className="w-full md:w-auto px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30 active:scale-95 transition-all shrink-0 cursor-pointer"
+          className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30 transition-transform transform hover:-translate-y-0.5 shrink-0 cursor-pointer"
         >
           <Sparkles className="w-4 h-4" />
-          <span>Gunakan Pasal Ini Buat Khotbah</span>
+          Gunakan Pasal Ini Buat Khotbah
         </button>
       </div>
 
-      {/* Mobile-optimized Header Strip */}
-      <div className="sm:hidden flex items-center justify-between gap-2 bg-slate-900 text-white p-3 rounded-xl border border-slate-800">
-        <div className="min-w-0">
-          <p className="font-serif-title font-bold text-sm text-white truncate">
-            {chapterData.bookName} {chapterData.chapter}
-          </p>
-          <p className="text-[10px] text-amber-400 truncate">
-            {chapterData.verses.length} ayat • TB, KJV, Tolaki
-          </p>
-        </div>
-        <button
-          onClick={() => onUseForSermon(`${chapterData.bookName} ${chapterData.chapter}:1-6`, chapterData.bookName)}
-          className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px] flex items-center gap-1 shrink-0 active:scale-95"
-        >
-          <Sparkles className="w-3 h-3" />
-          <span>Buat Khotbah</span>
-        </button>
-      </div>
+      {/* Control Bar: Book, Chapter, Version Selection & Mode Toggle */}
+      <div className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Book & Chapter Selectors */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Pilih Kitab
+              </label>
+              <select
+                value={selectedBookId}
+                onChange={(e) => {
+                  setSelectedBookId(e.target.value);
+                  setSelectedChapter(1);
+                }}
+                className="px-3 py-2 text-xs font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
+              >
+                {BIBLE_BOOKS.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.testament === 'OT' ? 'PL' : 'PB'})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-      {/* Control Bar: Book & Chapter Dropdowns, Search, and Version Switchers */}
-      <div className="bg-white rounded-2xl border border-stone-200/90 p-3 sm:p-5 shadow-xs space-y-3">
-        {/* Row 1: Book & Chapter side-by-side on mobile */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="col-span-1 sm:col-span-2">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Pilih Kitab
-            </label>
-            <select
-              value={selectedBookId}
-              onChange={(e) => {
-                setSelectedBookId(e.target.value);
-                setSelectedChapter(1);
-              }}
-              className="w-full px-2.5 py-1.5 text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
-            >
-              {BIBLE_BOOKS.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name} ({b.testament === 'OT' ? 'PL' : 'PB'})
-                </option>
-              ))}
-            </select>
-          </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Pasal
+              </label>
+              <select
+                value={selectedChapter}
+                onChange={(e) => setSelectedChapter(Number(e.target.value))}
+                className="px-3 py-2 text-xs font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900 min-w-[70px]"
+              >
+                {Array.from({ length: selectedBook.chaptersCount }, (_, i) => i + 1).map((ch) => (
+                  <option key={ch} value={ch}>
+                    Pasal {ch}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="col-span-1">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Pasal
-            </label>
-            <select
-              value={selectedChapter}
-              onChange={(e) => setSelectedChapter(Number(e.target.value))}
-              className="w-full px-2.5 py-1.5 text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
-            >
-              {Array.from({ length: selectedBook.chaptersCount }, (_, i) => i + 1).map((ch) => (
-                <option key={ch} value={ch}>
-                  Pasal {ch}
-                </option>
-              ))}
-            </select>
+            {/* Quick perikop navigation pills */}
+            <div className="w-full sm:w-auto">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Perikop Pilihan Cepat
+              </label>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
+                {[
+                  { label: 'Ibrani 11 (Iman)', book: 'ibrani', ch: 11 },
+                  { label: 'Yohanes 3 (Kasih)', book: 'yohanes', ch: 3 },
+                  { label: 'Yohanes 1 (Firman)', book: 'yohanes', ch: 1 },
+                  { label: 'Yohanes 15 (Pokok Anggur)', book: 'yohanes', ch: 15 },
+                  { label: 'Mazmur 23 (Gembala)', book: 'mazmur', ch: 23 },
+                  { label: 'Roma 8 (Kemenangan)', book: 'roma', ch: 8 },
+                ].map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedBookId(item.book);
+                      setSelectedChapter(item.ch);
+                    }}
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-lg border whitespace-nowrap shrink-0 transition-colors ${
+                      selectedBookId === item.book && selectedChapter === item.ch
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
+                        : 'bg-stone-100 text-slate-700 border-stone-200 hover:bg-stone-200'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Search within Chapter */}
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Cari Ayat
+          <div className="w-full sm:w-auto flex-1 sm:max-w-xs">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Cari Kata / Ayat
             </label>
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -176,124 +190,87 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari kata atau ayat..."
-                className="w-full pl-8 pr-7 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-800"
+                placeholder="Cari kata atau nomor ayat..."
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-800"
               />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-2 p-0.5 text-slate-400 hover:text-slate-700"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Quick perikop navigation pills */}
-        <div className="hidden sm:block">
-          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-            Perikop Pilihan Cepat
-          </label>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full">
-            {[
-              { label: 'Ibrani 11 (Iman)', book: 'ibrani', ch: 11 },
-              { label: 'Yohanes 3 (Kasih)', book: 'yohanes', ch: 3 },
-              { label: 'Yohanes 1 (Firman)', book: 'yohanes', ch: 1 },
-              { label: 'Yohanes 15 (Pokok Anggur)', book: 'yohanes', ch: 15 },
-              { label: 'Mazmur 23 (Gembala)', book: 'mazmur', ch: 23 },
-              { label: 'Roma 8 (Kemenangan)', book: 'roma', ch: 8 },
-            ].map((item, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setSelectedBookId(item.book);
-                  setSelectedChapter(item.ch);
-                }}
-                className={`px-3 py-1.5 text-xs rounded-full font-medium whitespace-nowrap shrink-0 transition-colors active:scale-95 ${
-                  selectedBookId === item.book && selectedChapter === item.ch
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                    : 'bg-stone-100 text-slate-700 border border-stone-200 hover:bg-stone-200'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Unified Version Switcher Segmented Bar */}
-        <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                setCompareMode(false);
-                setActiveVersion('TB');
-              }}
-              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                !compareMode && activeVersion === 'TB'
-                  ? 'bg-amber-500 text-slate-950 shadow-xs'
-                  : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              TB (LAI)
-            </button>
-            <button
-              onClick={() => {
-                setCompareMode(false);
-                setActiveVersion('KJV');
-              }}
-              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                !compareMode && activeVersion === 'KJV'
-                  ? 'bg-amber-500 text-slate-950 shadow-xs'
-                  : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              KJV
-            </button>
-            <button
-              onClick={() => {
-                setCompareMode(false);
-                setActiveVersion('TOLAKI');
-              }}
-              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                !compareMode && activeVersion === 'TOLAKI'
-                  ? 'bg-amber-500 text-slate-950 shadow-xs'
-                  : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              Tolaki
-            </button>
+        {/* Version Switchers & Comparison Mode Toggle */}
+        <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500 font-medium">Tampilan:</span>
             <button
               onClick={() => setCompareMode(true)}
-              className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-colors ${
                 compareMode
-                  ? 'bg-slate-900 text-amber-400 shadow-xs'
-                  : 'text-slate-700 hover:text-slate-950'
+                  ? 'bg-slate-900 text-amber-400 shadow-sm'
+                  : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
               }`}
             >
-              <Columns3 className="w-3 h-3" />
-              <span>3 Versi</span>
+              <Columns3 className="w-3.5 h-3.5" />
+              Bandingkan 3 Versi Berdampingan
+            </button>
+            <button
+              onClick={() => setCompareMode(false)}
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                !compareMode
+                  ? 'bg-slate-900 text-amber-400 shadow-sm'
+                  : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
+              }`}
+            >
+              Versi Tunggal
             </button>
           </div>
 
-          <span className="text-[11px] text-slate-400 hidden sm:inline">
-            Menampilkan {displayVerses.length} ayat
-          </span>
+          {!compareMode && (
+            <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl border border-stone-200">
+              <button
+                onClick={() => setActiveVersion('TB')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                  activeVersion === 'TB'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-slate-700 hover:text-slate-950'
+                }`}
+              >
+                TB (Terjemahan Baru)
+              </button>
+              <button
+                onClick={() => setActiveVersion('KJV')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                  activeVersion === 'KJV'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-slate-700 hover:text-slate-950'
+                }`}
+              >
+                King James (KJV)
+              </button>
+              <button
+                onClick={() => setActiveVersion('TOLAKI')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                  activeVersion === 'TOLAKI'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-slate-700 hover:text-slate-950'
+                }`}
+              >
+                Bahasa Tolaki
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Info Banner on Bahasa Tolaki */}
-      <div className="bg-amber-50/70 border border-amber-200/90 rounded-2xl p-3 sm:p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+      <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-3">
         <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
         <div className="leading-relaxed">
-          <strong className="font-semibold">Tentang Terjemahan Bahasa Tolaki:</strong> Bahasa Tolaki adalah bahasa daerah Sulawesi Tenggara (Konawe, Kendari, Kolaka). Istilah alkitabiah Tolaki: <em>Ombu Dewata</em> (Tuhan Allah), <em>Bisara</em> (Firman), <em>Pompakano</em> (Kasih Karunia), <em>Pewula</em> (Terang), dan <em>Inahu</em> (Hati Nurani/Jiwa).
+          <strong className="font-semibold">Tentang Terjemahan Bahasa Tolaki:</strong> Bahasa Tolaki adalah bahasa daerah suku Tolaki di Sulawesi Tenggara (Konawe, Kendari, Kolaka). Teks firman menggunakan istilah alkitabiah Tolaki: <em>Ombu Dewata</em> (Tuhan Allah), <em>Bisara</em> (Firman), <em>Pompakano</em> (Kasih Karunia), <em>Pewula</em> (Terang), dan <em>Inahu</em> (Hati Nurani/Jiwa).
         </div>
       </div>
 
       {/* Verses Presentation */}
-      <div className="space-y-3.5">
+      <div className="space-y-4">
         {displayVerses.map((v) => {
           const verseRef = `${chapterData.bookName} ${chapterData.chapter}:${v.verse}`;
           const isCopied = copiedVerseIndex === v.verse;
@@ -301,57 +278,58 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
           return (
             <div
               key={v.verse}
-              className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-5 shadow-xs hover:border-amber-400 transition-all space-y-3.5"
+              className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm hover:border-amber-400 transition-all space-y-4"
             >
               {/* Verse Header bar */}
-              <div className="flex items-center justify-between pb-2.5 border-b border-stone-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-100 gap-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shrink-0">
+                  <span className="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shrink-0">
                     {v.verse}
                   </span>
-                  <span className="font-serif-title font-bold text-sm sm:text-base text-slate-900">
+                  <span className="font-serif-title font-bold text-sm text-slate-900">
                     {verseRef}
                   </span>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-1.5">
+                {/* Verse Actions */}
+                <div className="flex items-center gap-1.5 flex-wrap self-end sm:self-auto">
                   <button
                     onClick={() => handleCopyVerse(v)}
-                    className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs flex items-center gap-1 font-semibold transition-colors active:scale-95"
+                    className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs flex items-center gap-1 font-medium transition-colors"
                     title="Salin Ayat"
                   >
                     {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{isCopied ? 'Tersalin' : 'Salin'}</span>
+                    <span className="text-[11px]">{isCopied ? 'Tersalin' : 'Salin'}</span>
                   </button>
 
                   <button
                     onClick={() => onOpenCommentaryForPassage(verseRef)}
-                    className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs flex items-center gap-1 font-semibold border border-blue-200 transition-colors active:scale-95"
+                    className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs flex items-center gap-1 font-semibold border border-blue-200 transition-colors"
                     title="Buka Tafsiran Para Pakar"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
-                    <span>Tafsiran Pakar</span>
+                    <span className="text-[11px]">Tafsiran</span>
                   </button>
 
                   <button
                     onClick={() => onUseForSermon(verseRef, v.tb)}
-                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1 transition-colors shadow-2xs active:scale-95"
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1 transition-colors shadow-sm cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Buat Khotbah</span>
+                    <span className="text-[11px]">Khotbah</span>
                   </button>
                 </div>
               </div>
 
-              {/* Verse Content Grid (Side-by-Side on desktop or stacked on mobile) */}
+              {/* Verse Content Grid (Side-by-Side or Single) */}
               {compareMode ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm">
                   {/* TB Column */}
                   <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-1.5">
                     <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100/70 px-2 py-0.5 rounded">
                       Terjemahan Baru (TB - LAI)
                     </span>
-                    <p className="text-slate-900 leading-relaxed pt-1">
+                    <p className="text-slate-800 leading-relaxed pt-1">
                       {v.tb}
                     </p>
                   </div>
@@ -361,84 +339,34 @@ export const BibleReaderView: React.FC<BibleReaderViewProps> = ({
                     <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider bg-blue-100/70 px-2 py-0.5 rounded">
                       King James Version (KJV)
                     </span>
-                    <p className="text-slate-900 leading-relaxed pt-1 italic font-serif">
+                    <p className="text-slate-800 leading-relaxed pt-1 font-serif italic">
                       "{v.kjv}"
                     </p>
                   </div>
 
                   {/* Tolaki Column */}
-                  <div className="p-3.5 rounded-xl bg-amber-50/50 border border-amber-200/70 space-y-1.5">
-                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-100/70 px-2 py-0.5 rounded">
-                      Bahasa Daerah Tolaki
+                  <div className="p-3.5 rounded-xl bg-amber-50/40 border border-amber-200/80 space-y-1.5">
+                    <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider bg-amber-200/80 px-2 py-0.5 rounded">
+                      Bahasa Tolaki (Sulawesi Tenggara)
                     </span>
-                    <p className="text-slate-900 leading-relaxed pt-1">
+                    <p className="text-slate-900 leading-relaxed pt-1 font-medium">
                       {v.tolaki}
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-sm leading-relaxed">
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-sm leading-relaxed text-slate-800">
                   {activeVersion === 'TB' && (
-                    <div>
-                      <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100/70 px-2 py-0.5 rounded">
-                        TB - Lembaga Alkitab Indonesia
-                      </span>
-                      <p className="text-slate-900 text-sm sm:text-base leading-relaxed pt-2">
-                        {v.tb}
-                      </p>
-                    </div>
+                    <p><strong className="text-amber-800">[TB]</strong> {v.tb}</p>
                   )}
-
                   {activeVersion === 'KJV' && (
-                    <div>
-                      <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider bg-blue-100/70 px-2 py-0.5 rounded">
-                        King James Version (KJV)
-                      </span>
-                      <p className="text-slate-900 text-sm sm:text-base leading-relaxed pt-2 italic font-serif">
-                        "{v.kjv}"
-                      </p>
-                    </div>
+                    <p className="font-serif italic"><strong className="text-blue-800 font-sans">[KJV]</strong> "{v.kjv}"</p>
                   )}
-
                   {activeVersion === 'TOLAKI' && (
-                    <div>
-                      <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-100/70 px-2 py-0.5 rounded">
-                        Bahasa Daerah Tolaki (Sulawesi Tenggara)
-                      </span>
-                      <p className="text-slate-900 text-sm sm:text-base leading-relaxed pt-2">
-                        {v.tolaki}
-                      </p>
-                    </div>
+                    <p className="font-medium"><strong className="text-amber-900">[Tolaki]</strong> {v.tolaki}</p>
                   )}
                 </div>
               )}
-
-              {/* Mobile-only Bottom Action Bar on Verse Card: 3 clean touch buttons */}
-              <div className="flex sm:hidden items-center justify-between gap-1.5 pt-2 border-t border-stone-100 w-full">
-                <button
-                  onClick={() => handleCopyVerse(v)}
-                  className="flex-1 py-2 px-1.5 rounded-xl bg-stone-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 whitespace-nowrap"
-                >
-                  {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> : <Copy className="w-3.5 h-3.5 shrink-0" />}
-                  <span>{isCopied ? 'Tersalin' : 'Salin'}</span>
-                </button>
-
-                <button
-                  onClick={() => onOpenCommentaryForPassage(verseRef)}
-                  className="flex-1 py-2 px-1.5 rounded-xl bg-blue-50 text-blue-800 text-xs font-semibold flex items-center justify-center gap-1 border border-blue-200 active:scale-95 whitespace-nowrap"
-                >
-                  <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                  <span>Tafsiran</span>
-                </button>
-
-                <button
-                  onClick={() => onUseForSermon(verseRef, v.tb)}
-                  className="flex-1 py-2 px-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 shadow-2xs whitespace-nowrap"
-                >
-                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                  <span>Khotbah</span>
-                </button>
-              </div>
             </div>
           );
         })}

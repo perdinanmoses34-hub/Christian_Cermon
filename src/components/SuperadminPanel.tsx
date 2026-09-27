@@ -21,8 +21,6 @@ import {
   AlertTriangle,
   RefreshCw,
   FileSpreadsheet,
-  ArrowLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { User, FeatureLocks, PaymentInfo } from '../types/sermon';
 import {
@@ -67,6 +65,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userFilterStatus, setUserFilterStatus] = useState<string>('all');
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [customDaysToAdd, setCustomDaysToAdd] = useState<number>(30);
 
   // Load initial admin data
   useEffect(() => {
@@ -136,20 +135,21 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
       const baseDate = user?.subscription_expires_at
         ? new Date(user.subscription_expires_at)
         : new Date();
+      // If expired, use current date
       const startTime = baseDate.getTime() > Date.now() ? baseDate.getTime() : Date.now();
       expiresAt = new Date(startTime + days * 24 * 60 * 60 * 1000).toISOString();
     }
 
     try {
       const updated = await updateAdminUserApi(userId, {
-        subscription_status: 'premium',
         subscription_expires_at: expiresAt,
+        subscription_status: 'premium',
       });
       setUsers((prev) => prev.map((u) => (u.id === userId ? updated : u)));
       setEditingUserId(null);
       showToast(
         days === 'unlimited'
-          ? 'Masa aktif diatur ke Permanen (Unlimited).'
+          ? 'Masa aktif diatur ke Permanen / Tak Terbatas.'
           : `Masa aktif berhasil diperpanjang +${days} hari.`
       );
     } catch (err: any) {
@@ -162,35 +162,41 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
       showToast('Akun superadmin tidak dapat dihapus.', 'info');
       return;
     }
-    if (!confirm(`Apakah Anda yakin ingin menghapus permanen akun "${user.name}"? Seluruh data khotbah pengguna ini akan terhapus.`)) {
-      return;
-    }
+
+    const confirmDelete = window.confirm(
+      `Apakah Anda yakin ingin menghapus akun "${user.name}" (${user.email}) beserta seluruh khotbahnya? Tindakan ini tidak dapat dibatalkan.`
+    );
+    if (!confirmDelete) return;
 
     try {
       await deleteAdminUserApi(user.id);
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      showToast(`Akun ${user.name} berhasil dihapus permanen.`);
+      setUsers((prev) => prev.map((u) => u).filter((u) => u.id !== user.id));
+      showToast(`Pengguna ${user.name} berhasil dihapus.`);
     } catch (err: any) {
       showToast(err.message || 'Gagal menghapus pengguna', 'info');
     }
   };
 
-  // Feature Lock Actions
-  const handleToggleLock = async (featureKey: keyof FeatureLocks) => {
-    const updatedLocks = {
+  // Lock switches save
+  const handleToggleLock = async (key: keyof FeatureLocks) => {
+    const updated = {
       ...featureLocks,
-      [featureKey]: !featureLocks[featureKey],
+      [key]: !featureLocks[key],
     };
-    setFeatureLocks(updatedLocks);
+    setFeatureLocks(updated);
     try {
-      await updateAdminSettingsApi({ feature_locks: updatedLocks });
-      showToast(`Pengaturan kunci menu berhasil diperbarui.`);
+      await updateAdminSettingsApi({ feature_locks: updated });
+      showToast(
+        updated[key]
+          ? `Fitur dikunci: Hanya pengguna Berlangganan yang dapat mengakses.`
+          : `Fitur dibuka: Semua pengguna dapat mengakses secara gratis.`
+      );
     } catch (err: any) {
       showToast(err.message || 'Gagal menyimpan pengaturan', 'info');
     }
   };
 
-  // Save Payment Info
+  // Payment info save
   const handleSavePaymentInfo = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -230,94 +236,93 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
   }, [users]);
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-8 animate-fadeIn pb-safe md:pb-8 w-full max-w-full overflow-x-hidden">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-2xl p-4 sm:p-7 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-bold mb-2">
-            <Key className="w-3 h-3" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold mb-3">
+            <Key className="w-3.5 h-3.5" />
             Superadmin Control Center
           </div>
-          <h1 className="text-lg sm:text-2xl md:text-3xl font-serif-title font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-serif-title font-bold text-white tracking-tight flex items-center gap-3">
             Panel Kendali Superadmin
-            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-sans font-bold">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-sans font-bold">
               tn.timbu
             </span>
           </h1>
-          <p className="text-[11px] sm:text-xs md:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Kelola seluruh akun pengguna, atur masa aktif dan langganan, serta tentukan menu-menu yang dikunci / harus berlangganan.
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            Kelola seluruh akun pengguna, atur masa aktif dan langganan, nonaktifkan atau hapus pengguna, serta tentukan menu-menu yang dikunci / harus berlangganan.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={loadData}
             disabled={loading}
-            className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors active:scale-95"
+            className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={onBackToApp}
-            className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg transition-transform transform hover:-translate-y-0.5"
           >
-            <ArrowLeft className="w-3.5 h-3.5 hidden sm:inline" />
             <span>Kembali ke Aplikasi</span>
           </button>
         </div>
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-stone-200/90 shadow-2xs flex items-center justify-between">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pengguna</p>
-            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{stats.total}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pengguna</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">{stats.total}</p>
           </div>
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
-            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+            <Users className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-stone-200/90 shadow-2xs flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-800">Berlangganan</p>
-            <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-0.5">{stats.premium}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800">Berlangganan (Premium)</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{stats.premium}</p>
           </div>
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <Crown className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <Crown className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-stone-200/90 shadow-2xs flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">Pengguna Gratis</p>
-            <p className="text-xl sm:text-2xl font-bold text-slate-700 mt-0.5">{stats.free}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pengguna Gratis</p>
+            <p className="text-2xl font-bold text-slate-700 mt-1">{stats.free}</p>
           </div>
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-stone-100 text-slate-600 flex items-center justify-center font-bold">
-            <UserCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="w-10 h-10 rounded-xl bg-stone-100 text-slate-600 flex items-center justify-center font-bold">
+            <UserCheck className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-stone-200/90 shadow-2xs flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-red-600">Dinonaktifkan</p>
-            <p className="text-xl sm:text-2xl font-bold text-red-600 mt-0.5">{stats.inactive}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-red-600">Akun Dinonaktifkan</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{stats.inactive}</p>
           </div>
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
-            <UserX className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+            <UserX className="w-5 h-5" />
           </div>
         </div>
       </div>
 
-      {/* Tabs Navigation: Horizontal scroll on mobile */}
-      <div className="flex items-center gap-1.5 border-b border-stone-200 pb-2 overflow-x-auto no-scrollbar w-full">
+      {/* Tabs Navigation */}
+      <div className="flex items-center gap-2 border-b border-stone-200 pb-2 overflow-x-auto no-scrollbar -mx-1 px-1">
         <button
           onClick={() => setActiveTab('users')}
-          className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors active:scale-95 ${
+          className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'users'
-              ? 'bg-slate-900 text-amber-400 shadow-2xs'
+              ? 'bg-slate-900 text-amber-400 shadow-sm'
               : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100'
           }`}
         >
@@ -327,41 +332,41 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
 
         <button
           onClick={() => setActiveTab('locks')}
-          className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors active:scale-95 ${
+          className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'locks'
-              ? 'bg-slate-900 text-amber-400 shadow-2xs'
+              ? 'bg-slate-900 text-amber-400 shadow-sm'
               : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100'
           }`}
         >
           <Lock className="w-4 h-4" />
-          <span>Kunci Menu & Berlangganan</span>
+          <span>Kunci Fitur & Paywall</span>
         </button>
 
         <button
           onClick={() => setActiveTab('payments')}
-          className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors active:scale-95 ${
+          className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'payments'
-              ? 'bg-slate-900 text-amber-400 shadow-2xs'
+              ? 'bg-slate-900 text-amber-400 shadow-sm'
               : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100'
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>Rekening & WhatsApp</span>
+          <span>Pembayaran & WhatsApp</span>
         </button>
       </div>
 
       {/* Tab 1: Manajemen Pengguna */}
       {activeTab === 'users' && (
-        <div className="space-y-3.5 sm:space-y-4">
+        <div className="space-y-4">
           {/* Filter and search bar */}
-          <div className="bg-white p-3 sm:p-4 rounded-2xl border border-stone-200/90 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={userSearchQuery}
                 onChange={(e) => setUserSearchQuery(e.target.value)}
-                placeholder="Cari nama, email, username, atau gereja..."
+                placeholder="Cari berdasarkan nama, email, username, atau gereja..."
                 className="w-full pl-9 pr-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500 text-slate-900"
               />
             </div>
@@ -378,10 +383,10 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </select>
           </div>
 
-          {/* Mobile User Cards List (Android friendly) */}
+          {/* Mobile User Cards (Shown on mobile devices) */}
           <div className="md:hidden space-y-3">
             {filteredUsers.length === 0 ? (
-              <div className="bg-white p-8 rounded-2xl border border-stone-200 text-center text-slate-400 text-xs">
+              <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center text-slate-400 text-xs">
                 Tidak ada pengguna yang cocok dengan kriteria pencarian.
               </div>
             ) : (
@@ -401,43 +406,35 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                 }
 
                 return (
-                  <div
-                    key={user.id}
-                    className="bg-white rounded-2xl border border-stone-200/90 p-3.5 shadow-2xs space-y-3"
-                  >
+                  <div key={user.id} className="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-2.5">
                         <div
                           className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
                             isSuperadmin
-                              ? 'bg-slate-900 text-amber-400'
+                              ? 'bg-slate-900 text-amber-400 ring-2 ring-amber-400/40'
                               : 'bg-stone-100 text-slate-700'
                           }`}
                         >
                           {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                         </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5 truncate">
-                            <span className="truncate">{user.name}</span>
+                        <div>
+                          <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5 flex-wrap">
+                            <span>{user.name}</span>
                             {isSuperadmin && (
-                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 text-[8px] font-black uppercase shrink-0">
+                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 text-[9px] font-black uppercase">
                                 SUPERADMIN
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-slate-400 truncate">
-                            {user.email} {user.username ? `(@${user.username})` : ''}
-                          </p>
-                          <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
-                            {user.church_name || 'Gereja Kristen'}
-                          </p>
+                          <p className="text-[11px] text-slate-500">{user.email}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">{user.church_name || 'Gereja Kristen'}</p>
                         </div>
                       </div>
 
-                      {/* Status Badges */}
-                      <div className="flex flex-col items-end gap-1 shrink-0">
+                      <div className="flex flex-col items-end gap-1">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             isPremium
                               ? 'bg-amber-100 text-amber-900 border border-amber-300'
                               : 'bg-stone-100 text-slate-600 border border-stone-200'
@@ -447,75 +444,69 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                           {isPremium ? 'PREMIUM' : 'GRATIS'}
                         </span>
                         <span
-                          className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                            isActive
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-red-50 text-red-700 border border-red-200'
+                          className={`text-[10px] font-bold px-2 py-0.2 rounded-full ${
+                            isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
                           }`}
                         >
-                          {isActive ? 'Aktif' : 'Dinonaktifkan'}
+                          {isActive ? 'Aktif' : 'Nonaktif'}
                         </span>
                       </div>
                     </div>
 
-                    {/* Validity Info */}
-                    <div className="bg-stone-50 p-2.5 rounded-xl border border-stone-200/80 text-[11px] text-slate-600 flex items-center justify-between">
+                    <div className="pt-2 border-t border-stone-100 text-[11px] flex items-center justify-between text-slate-600">
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>Masa Aktif: <strong>{validityText}</strong></span>
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        {validityText}
                       </span>
-
                       {!isSuperadmin && (
                         <button
                           onClick={() => setEditingUserId(isEditingThisUser ? null : user.id)}
-                          className="text-[10px] font-bold text-amber-800 hover:text-amber-900 underline shrink-0 ml-1"
+                          className="text-amber-800 font-bold hover:underline"
                         >
-                          {isEditingThisUser ? 'Tutup' : 'Atur'}
+                          {isEditingThisUser ? 'Tutup' : 'Atur Masa Aktif'}
                         </button>
                       )}
                     </div>
 
-                    {/* Quick Validity Modifier */}
                     {isEditingThisUser && (
-                      <div className="p-3 bg-amber-50/90 rounded-xl border border-amber-200 space-y-2">
+                      <div className="p-2.5 bg-amber-50/80 rounded-xl border border-amber-200 space-y-1.5">
                         <p className="text-[10px] font-bold text-amber-950 uppercase">Perpanjang Masa Aktif:</p>
-                        <div className="grid grid-cols-2 gap-1.5">
+                        <div className="grid grid-cols-4 gap-1">
                           <button
                             onClick={() => handleExtendValidity(user.id, 7)}
-                            className="py-1.5 px-2 bg-white border border-amber-300 rounded-lg text-[10px] font-bold text-amber-950 active:scale-95"
+                            className="py-1 bg-white border border-amber-300 rounded text-[10px] font-bold text-center text-amber-950"
                           >
-                            +7 Hari
+                            +7 H
                           </button>
                           <button
                             onClick={() => handleExtendValidity(user.id, 30)}
-                            className="py-1.5 px-2 bg-white border border-amber-300 rounded-lg text-[10px] font-bold text-amber-950 active:scale-95"
+                            className="py-1 bg-white border border-amber-300 rounded text-[10px] font-bold text-center text-amber-950"
                           >
-                            +30 Hari (1 Bulan)
+                            +30 H
                           </button>
                           <button
                             onClick={() => handleExtendValidity(user.id, 365)}
-                            className="py-1.5 px-2 bg-white border border-amber-300 rounded-lg text-[10px] font-bold text-amber-950 active:scale-95"
+                            className="py-1 bg-white border border-amber-300 rounded text-[10px] font-bold text-center text-amber-950"
                           >
-                            +1 Tahun
+                            +1 Thn
                           </button>
                           <button
                             onClick={() => handleExtendValidity(user.id, 'unlimited')}
-                            className="py-1.5 px-2 bg-amber-500 text-slate-950 rounded-lg text-[10px] font-bold active:scale-95"
+                            className="py-1 bg-amber-500 text-slate-950 rounded text-[10px] font-bold text-center"
                           >
-                            Permanen (Tanpa Batas)
+                            Permanen
                           </button>
                         </div>
                       </div>
                     )}
 
-                    {/* Mobile Action Buttons */}
-                    <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-stone-100">
+                    <div className="pt-2 border-t border-stone-100 flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => handleToggleSubscription(user)}
-                        className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-colors text-center active:scale-95 ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                           isPremium
                             ? 'bg-stone-100 hover:bg-stone-200 text-slate-700'
-                            : 'bg-amber-500 text-slate-950'
+                            : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
                         }`}
                       >
                         {isPremium ? 'Set Gratis' : 'Set Premium'}
@@ -524,20 +515,21 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                       {!isSuperadmin && (
                         <button
                           onClick={() => handleToggleUserActive(user)}
-                          className={`py-1.5 px-3 rounded-xl text-[10px] font-bold transition-colors active:scale-95 ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${
                             isActive
-                              ? 'bg-stone-100 text-slate-600 hover:text-red-700'
+                              ? 'bg-stone-100 text-slate-600 hover:bg-red-50 hover:text-red-700'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}
                         >
-                          {isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                          {isActive ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                          <span>{isActive ? 'Nonaktifkan' : 'Aktifkan'}</span>
                         </button>
                       )}
 
                       {!isSuperadmin && (
                         <button
                           onClick={() => handleDeleteUser(user)}
-                          className="p-1.5 rounded-xl bg-stone-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 active:scale-95"
+                          className="p-1.5 rounded-lg bg-stone-100 hover:bg-red-100 text-slate-400 hover:text-red-700 transition-colors"
                           title="Hapus Pengguna"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -550,8 +542,8 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             )}
           </div>
 
-          {/* Desktop Users Table */}
-          <div className="hidden md:block bg-white rounded-2xl border border-stone-200/90 shadow-2xs overflow-hidden">
+          {/* Users Table (Shown on Desktop) */}
+          <div className="hidden md:block bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-700">
                 <thead className="bg-stone-50 border-b border-stone-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
@@ -592,13 +584,11 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                           {/* Name & Email */}
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2.5">
-                              <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                                  isSuperadmin
-                                    ? 'bg-slate-900 text-amber-400'
-                                    : 'bg-stone-100 text-slate-700'
-                                }`}
-                              >
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                                isSuperadmin
+                                  ? 'bg-slate-900 text-amber-400'
+                                  : 'bg-stone-100 text-slate-700'
+                              }`}>
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                               </div>
                               <div>
@@ -648,7 +638,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                               {!isSuperadmin && (
                                 <button
                                   onClick={() => setEditingUserId(isEditingThisUser ? null : user.id)}
-                                  className="text-[10px] text-amber-800 hover:text-amber-900 underline block font-semibold cursor-pointer"
+                                  className="text-[10px] text-amber-800 hover:text-amber-900 underline block font-semibold"
                                 >
                                   {isEditingThisUser ? 'Tutup Atur Masa Aktif' : 'Atur Masa Aktif'}
                                 </button>
@@ -661,25 +651,25 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                                   <div className="flex flex-wrap gap-1">
                                     <button
                                       onClick={() => handleExtendValidity(user.id, 7)}
-                                      className="px-2 py-1 bg-white border border-amber-300 rounded text-[10px] font-bold hover:bg-amber-100 text-amber-950 cursor-pointer"
+                                      className="px-2 py-1 bg-white border border-amber-300 rounded text-[10px] font-bold hover:bg-amber-100 text-amber-950"
                                     >
                                       +7 Hari
                                     </button>
                                     <button
                                       onClick={() => handleExtendValidity(user.id, 30)}
-                                      className="px-2 py-1 bg-white border border-amber-300 rounded text-[10px] font-bold hover:bg-amber-100 text-amber-950 cursor-pointer"
+                                      className="px-2 py-1 bg-white border border-amber-300 rounded text-[10px] font-bold hover:bg-amber-100 text-amber-950"
                                     >
                                       +30 Hari (1 Bulan)
                                     </button>
                                     <button
                                       onClick={() => handleExtendValidity(user.id, 365)}
-                                      className="px-2 py-1 bg-white border border-amber-300 rounded text-[10px] font-bold hover:bg-amber-100 text-amber-950 cursor-pointer"
+                                      className="px-2 py-1 bg-white border border-amber-300 rounded text-[10px] font-bold hover:bg-amber-100 text-amber-950"
                                     >
                                       +1 Tahun
                                     </button>
                                     <button
                                       onClick={() => handleExtendValidity(user.id, 'unlimited')}
-                                      className="px-2 py-1 bg-amber-500 text-slate-950 rounded text-[10px] font-bold hover:bg-amber-400 cursor-pointer"
+                                      className="px-2 py-1 bg-amber-500 text-slate-950 rounded text-[10px] font-bold hover:bg-amber-400"
                                     >
                                       Permanen
                                     </button>
@@ -708,7 +698,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                               {/* Toggle Premium */}
                               <button
                                 onClick={() => handleToggleSubscription(user)}
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors ${
                                   isPremium
                                     ? 'bg-stone-100 hover:bg-stone-200 text-slate-700'
                                     : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
@@ -722,7 +712,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                               {!isSuperadmin && (
                                 <button
                                   onClick={() => handleToggleUserActive(user)}
-                                  className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                                  className={`p-1.5 rounded-lg text-xs transition-colors ${
                                     isActive
                                       ? 'bg-stone-100 hover:bg-red-50 text-slate-600 hover:text-red-700'
                                       : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
@@ -737,7 +727,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
                               {!isSuperadmin && (
                                 <button
                                   onClick={() => handleDeleteUser(user)}
-                                  className="p-1.5 rounded-lg bg-stone-100 hover:bg-red-100 text-slate-400 hover:text-red-700 transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-stone-100 hover:bg-red-100 text-slate-400 hover:text-red-700 transition-colors"
                                   title="Hapus Pengguna"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -758,37 +748,37 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
 
       {/* Tab 2: Penguncian Fitur & Menu Berbayar */}
       {activeTab === 'locks' && (
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-4 sm:p-8 shadow-2xs space-y-4 sm:space-y-6">
+        <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-sm space-y-6">
           <div>
-            <h3 className="text-base sm:text-lg font-bold font-serif-title text-slate-900">
+            <h3 className="text-lg font-bold font-serif-title text-slate-900">
               Pengaturan Kunci Menu & Akses Berlangganan
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Aktifkan sakelar kunci di bawah ini untuk mewajibkan pengguna berlangganan (Premium) sebelum dapat membuka menu tersebut.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Feature 1: PowerPoint Export */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">
                     Download PowerPoint (.PPTX)
                   </h4>
                   {featureLocks.powerPointExport && (
                     <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">
-                      Terkunci
+                      Terkunci (Hanya Premium)
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Pengguna gratis harus berlangganan untuk mendownload file slide presentasi .PPTX asli.
                 </p>
               </div>
               <button
                 onClick={() => handleToggleLock('powerPointExport')}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
                   featureLocks.powerPointExport ? 'bg-amber-500' : 'bg-stone-300'
                 }`}
               >
@@ -801,25 +791,25 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             {/* Feature 2: Scholarly Commentary */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">
                     Menu Tafsiran Pakar Kredibel
                   </h4>
                   {featureLocks.scholarlyCommentary && (
                     <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">
-                      Terkunci
+                      Terkunci (Hanya Premium)
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Mengunci kumpulan catatan tafsiran Matthew Henry, John Calvin, Albert Barnes, dll.
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Mengunci kumpulan catatan tafsiran Matthew Henry, John Calvin, Albert Barnes, Spurgeon, dll.
                 </p>
               </div>
               <button
                 onClick={() => handleToggleLock('scholarlyCommentary')}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
                   featureLocks.scholarlyCommentary ? 'bg-amber-500' : 'bg-stone-300'
                 }`}
               >
@@ -832,25 +822,25 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             {/* Feature 3: AI Assistant in Editor */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">
                     AI Sermon Assistant di Editor
                   </h4>
                   {featureLocks.sermonAiAssistant && (
                     <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">
-                      Terkunci
+                      Terkunci (Hanya Premium)
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Kolom editor khotbah untuk bantuan penyempurnaan teks dan ilustrasi.
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Kolom kanan editor khotbah untuk penyempurnaan otomatis dan penambahan ilustrasi khotbah.
                 </p>
               </div>
               <button
                 onClick={() => handleToggleLock('sermonAiAssistant')}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
                   featureLocks.sermonAiAssistant ? 'bg-amber-500' : 'bg-stone-300'
                 }`}
               >
@@ -863,25 +853,25 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             {/* Feature 4: AI Sermon Generator */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">
-                    Pembuatan Khotbah AI (Wizard)
+                    Pembuatan Khotbah AI (Wizard Baru)
                   </h4>
                   {featureLocks.aiSermonGeneration && (
                     <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">
-                      Terkunci
+                      Terkunci (Hanya Premium)
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                  Hanya pengguna Berlangganan yang dapat membuat naskah khotbah baru dengan AI.
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Jika dikunci, hanya pengguna Berlangganan yang dapat membuat naskah khotbah baru dengan AI.
                 </p>
               </div>
               <button
                 onClick={() => handleToggleLock('aiSermonGeneration')}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
                   featureLocks.aiSermonGeneration ? 'bg-amber-500' : 'bg-stone-300'
                 }`}
               >
@@ -894,25 +884,25 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             {/* Feature 5: Tolaki Bible */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">
-                    Alkitab Bahasa Daerah Tolaki
+                    Alkitab Bahasa Tolaki
                   </h4>
                   {featureLocks.tolakiBible && (
                     <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">
-                      Terkunci
+                      Terkunci (Hanya Premium)
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Mewajibkan pengguna berlangganan untuk melihat firman versi bahasa daerah Tolaki.
                 </p>
               </div>
               <button
                 onClick={() => handleToggleLock('tolakiBible')}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
                   featureLocks.tolakiBible ? 'bg-amber-500' : 'bg-stone-300'
                 }`}
               >
@@ -925,25 +915,25 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             {/* Feature 6: Unlimited Sermons Limit */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
+            <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">
-                    Batas Maksimal Draf (Free Max 3)
+                    Batas Maksimal Draf (Free Max 3 Khotbah)
                   </h4>
                   {featureLocks.unlimitedSermons && (
                     <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">
-                      Terkunci
+                      Terkunci (Hanya Premium)
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Pengguna gratis dibatasi maksimal 3 khotbah, kecuali berlangganan Premium.
                 </p>
               </div>
               <button
                 onClick={() => handleToggleLock('unlimitedSermons')}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
                   featureLocks.unlimitedSermons ? 'bg-amber-500' : 'bg-stone-300'
                 }`}
               >
@@ -960,19 +950,19 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
 
       {/* Tab 3: Pengaturan Pembayaran & WhatsApp */}
       {activeTab === 'payments' && (
-        <form onSubmit={handleSavePaymentInfo} className="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-4 sm:p-8 shadow-2xs space-y-4 sm:space-y-6">
+        <form onSubmit={handleSavePaymentInfo} className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-sm space-y-6">
           <div>
-            <h3 className="text-base sm:text-lg font-bold font-serif-title text-slate-900">
+            <h3 className="text-lg font-bold font-serif-title text-slate-900">
               Informasi Rekening Bank & WhatsApp Admin
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Data ini akan muncul secara otomatis kepada pengguna saat mereka mencoba membuka menu yang dikunci atau ingin berlangganan.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                 Nama Bank
               </label>
               <input
@@ -985,7 +975,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                 Nomor Rekening
               </label>
               <input
@@ -998,7 +988,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                 Atas Nama Rekening
               </label>
               <input
@@ -1011,7 +1001,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                 Nomor WhatsApp Admin (Aktivasi / Konfirmasi)
               </label>
               <input
@@ -1025,7 +1015,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                 Tarif Paket Bulanan
               </label>
               <input
@@ -1038,7 +1028,7 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                 Tarif Paket Tahunan
               </label>
               <input
@@ -1051,10 +1041,10 @@ export const SuperadminPanel: React.FC<SuperadminPanelProps> = ({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-stone-100 flex items-center justify-end">
+          <div className="pt-4 border-t border-stone-100 flex items-center justify-end">
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-sm transition-transform transform hover:-translate-y-0.5 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Simpan Perubahan Rekening & Kontak</span>
